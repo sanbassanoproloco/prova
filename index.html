@@ -1,0 +1,2228 @@
+<!DOCTYPE html>
+<html lang="it" class="scroll-smooth">
+<head>
+  <title>Pro Loco San Bassano APS - Sito Ufficiale</title>
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="shortcut icon" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ABCD1234EF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YSY57ZMHNC');
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pro Loco San Bassano APS - Sito Ufficiale</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Caveat:wght@600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+              950: '#0a2e1a',
+            },
+            accent: {
+              500: '#f59e0b',
+              600: '#d97706',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Plus Jakarta Sans', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Firebase (per le Comunicazioni gestite dal pannello admin.html) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { firebaseConfig } from "./firebase-config.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str || '';
+      return d.innerHTML;
+    }
+
+    function formatDataIt(dataStr) {
+      if (!dataStr) return '';
+      const d = new Date(dataStr + 'T00:00:00');
+      if (isNaN(d)) return dataStr;
+      return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    async function caricaComunicazioni() {
+      const container = document.getElementById('comunicazioni-list');
+      if (!container) return;
+      container.innerHTML = '<div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm text-center"><p class="text-slate-600">Caricamento comunicazioni...</p></div>';
+
+      try {
+        const q = query(
+          collection(db, 'comunicazioni'),
+          where('pubblicato', '==', true),
+          orderBy('data', 'desc')
+        );
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+          container.innerHTML = '<div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm text-center"><p class="text-slate-600">Nessuna comunicazione in pubblicazione.</p></div>';
+          return;
+        }
+
+        let html = '<div class="space-y-6">';
+        snap.forEach(docSnap => {
+          const c = docSnap.data();
+          html += `
+            <article class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-semibold uppercase tracking-wider text-amber-600 mb-2">${escapeHtml(formatDataIt(c.data))}</p>
+              <h3 class="font-heading text-xl font-extrabold text-slate-900 mb-3">${escapeHtml(c.titolo)}</h3>
+              <div class="text-slate-700 leading-relaxed whitespace-pre-line">${escapeHtml(c.testo)}</div>
+            </article>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+      } catch (err) {
+        console.error('Errore caricamento comunicazioni:', err);
+        container.innerHTML = '<div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm text-center"><p class="text-red-600">Non è stato possibile caricare le comunicazioni. Riprova più tardi.</p></div>';
+      }
+    }
+
+    window.caricaComunicazioni = caricaComunicazioni;
+  </script>
+
+  <style>
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+    }
+    .hero-pattern {
+      background-color: #0a2e1a;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .page-section {
+      display: none;
+    }
+    .page-section.active {
+      display: block;
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+    .nav-btn {
+      white-space: nowrap;
+    }
+    .header-nav {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+      max-width: 100%;
+    }
+    .header-nav::-webkit-scrollbar {
+      display: none;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== Badge/Sigillo "30°Anniversario" ===== */
+    .anniversary-seal, .anniversary-badge {
+      position: relative;
+      overflow: hidden;
+    }
+    .anniversary-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      flex-shrink: 0;
+      max-width: 100%;
+      white-space: nowrap;
+      line-height: 1;
+      overflow: hidden;
+    }
+    .anniversary-badge > span {
+      display: inline-block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .anniversary-seal::after, .anniversary-badge::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -160%;
+      width: 55%;
+      height: 100%;
+      background: linear-gradient(115deg, transparent, rgba(255,255,255,0.65), transparent);
+      animation: seal-shine 4s ease-in-out infinite;
+    }
+    @keyframes seal-shine {
+      0%   { left: -160%; }
+      45%  { left: 160%; }
+      100% { left: 160%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .anniversary-seal::after, .anniversary-badge::after { animation: none; }
+    }
+
+    /* ===== SeRestate 2026 (pagina integrata) ===== */
+  :root{
+    --night-deep:   #060d21;
+    --night:        #0d1b3d;
+    --night-mid:    #16295c;
+    --cream:        #f4ede0;
+    --gold:         #e8b64a;
+    --gold-soft:    #f3d489;
+    --mint:         #8fd9c4;
+    --rose:         #c9707e;
+    --line:         rgba(244,237,224,0.16);
+    --line-strong:  rgba(244,237,224,0.32);
+    --max-w: 920px;
+  }
+
+  #page-serestate *{ box-sizing:border-box; }
+  #page-serestate{
+    margin:0;
+    background:var(--night-deep);
+    color:var(--cream);
+    font-family:'Manrope', system-ui, sans-serif;
+    font-weight:400;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  #page-serestate h1, #page-serestate h2, #page-serestate h3{ font-family:'Fraunces', serif; margin:0; }
+
+  #page-serestate a{ color:inherit; }
+
+  #page-serestate .script{
+    font-family:'Caveat', cursive;
+  }
+
+  /* ---------- Starfield hero ---------- */
+  #page-serestate .hero{
+    position:relative;
+    min-height:100svh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    overflow:hidden;
+    padding:2rem 1.5rem 4rem;
+    background:
+      radial-gradient(ellipse at 50% -10%, var(--night-mid) 0%, var(--night) 45%, var(--night-deep) 100%);
+  }
+
+  #page-serestate #stars-canvas{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:0;
+  }
+
+  #page-serestate .hero-content{
+    position:relative;
+    z-index:1;
+    max-width:700px;
+  }
+
+  #page-serestate .eyebrow{
+    display:inline-block;
+    font-size:0.78rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--mint);
+    border:1px solid rgba(143,217,196,0.4);
+    padding:0.35rem 0.9rem;
+    border-radius:999px;
+    margin-bottom:1.6rem;
+  }
+
+  #page-serestate .hero h1{
+    font-size:clamp(3.2rem, 12vw, 6rem);
+    font-weight:600;
+    font-style:italic;
+    color:var(--gold-soft);
+    text-shadow: 0 0 18px rgba(232,182,74,0.55), 0 0 46px rgba(232,182,74,0.25);
+    line-height:1;
+  }
+
+  #page-serestate .hero .year{
+    display:block;
+    font-family:'Manrope', sans-serif;
+    font-style:normal;
+    font-weight:700;
+    letter-spacing:0.08em;
+    font-size:clamp(1.1rem, 3vw, 1.5rem);
+    color:var(--cream);
+    margin-top:1rem;
+    opacity:0.85;
+  }
+
+  #page-serestate .hero p.lede{
+    margin-top:1.8rem;
+    font-size:1.05rem;
+    color:rgba(244,237,224,0.78);
+    max-width:520px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+
+  #page-serestate .hero .patrocinio{
+    margin-top:0.6rem;
+    font-size:0.85rem;
+    color:rgba(244,237,224,0.5);
+  }
+
+  #page-serestate .scroll-cue{
+    position:relative;
+    z-index:1;
+    margin-top:3rem;
+    font-size:0.78rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:rgba(244,237,224,0.45);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0.5rem;
+  }
+  #page-serestate .scroll-cue .dot{
+    width:1px;
+    height:34px;
+    background:linear-gradient(var(--gold), transparent);
+    animation: dropfade 2.2s ease-in-out infinite;
+  }
+  @keyframes dropfade{
+    0%{ transform:translateY(0); opacity:0; }
+    30%{ opacity:1; }
+    100%{ transform:translateY(20px); opacity:0; }
+  }
+
+  /* ---------- Intro strip ---------- */
+  #page-serestate .intro{
+    max-width:var(--max-w);
+    margin:0 auto;
+    padding:5rem 1.5rem 2rem;
+    text-align:center;
+  }
+  #page-serestate .intro h2{
+    font-size:clamp(1.6rem, 4vw, 2.1rem);
+    font-weight:600;
+    color:var(--cream);
+  }
+  #page-serestate .intro p{
+    max-width:560px;
+    margin:1rem auto 0;
+    color:rgba(244,237,224,0.7);
+    font-size:1rem;
+  }
+
+  /* ---------- Calendar ---------- */
+  #page-serestate .calendar{
+    max-width:var(--max-w);
+    margin:0 auto;
+    padding:3rem 1.5rem 6rem;
+    position:relative;
+  }
+
+  #page-serestate .calendar::before{
+    /* the constellation line */
+    content:"";
+    position:absolute;
+    left:28px;
+    top:0;
+    bottom:0;
+    width:1px;
+    background:repeating-linear-gradient(
+      to bottom,
+      var(--line-strong) 0,
+      var(--line-strong) 4px,
+      transparent 4px,
+      transparent 12px
+    );
+  }
+  @media (min-width:640px){
+    #page-serestate .calendar::before{ left:50%; margin-left:-0.5px; }
+  }
+
+  #page-serestate .event{
+    position:relative;
+    padding:0 0 2.6rem 64px;
+    opacity:0;
+    transform:translateY(16px);
+    transition:opacity 0.7s ease, transform 0.7s ease;
+  }
+  #page-serestate .event.in-view{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+  @media (min-width:640px){
+    #page-serestate .event{
+      width:calc(50% - 36px);
+      padding:0 0 3.2rem 0;
+    }
+    #page-serestate .event:nth-child(odd){
+      margin-right:auto;
+      padding-right:2.4rem;
+      text-align:right;
+    }
+    #page-serestate .event:nth-child(even){
+      margin-left:auto;
+      padding-left:2.4rem;
+    }
+  }
+
+  #page-serestate .event-star{
+    position:absolute;
+    left:20px;
+    top:2px;
+    width:18px;
+    height:18px;
+    color:var(--gold);
+  }
+  @media (min-width:640px){
+    #page-serestate .event:nth-child(odd) .event-star{ left:auto; right:-45px; }
+    #page-serestate .event:nth-child(even) .event-star{ left:-45px; }
+  }
+
+  #page-serestate .event-media{
+    width:100%;
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:1rem;
+    border:1px solid var(--line);
+    background:var(--night);
+  }
+  #page-serestate .event-media img{
+    display:block;
+    width:100%;
+    height:auto;
+    object-fit:cover;
+  }
+
+  #page-serestate .event-card{
+    background:linear-gradient(160deg, rgba(22,41,92,0.55), rgba(13,27,61,0.55));
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:1.4rem 1.6rem;
+    backdrop-filter: blur(2px);
+    transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  #page-serestate .event-card:hover{
+    border-color:var(--line-strong);
+    transform:translateY(-2px);
+    box-shadow:0 10px 30px -12px rgba(0,0,0,0.5);
+  }
+
+  /* Stato della serata: passata / prossima */
+  #page-serestate .event-status{
+    display:none;
+    font-size:0.68rem;
+    font-weight:700;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding:0.3rem 0.7rem;
+    border-radius:999px;
+    margin-bottom:0.8rem;
+  }
+  #page-serestate .event-card{ position:relative; }
+
+  #page-serestate .event.is-next .event-card{
+    border-color:var(--gold);
+    box-shadow:0 0 0 1px rgba(232,182,74,0.5), 0 12px 34px -14px rgba(232,182,74,0.35);
+  }
+  #page-serestate .event.is-next .event-status{
+    display:inline-block;
+    background:rgba(232,182,74,0.16);
+    color:var(--gold-soft);
+    border:1px solid rgba(232,182,74,0.4);
+  }
+  #page-serestate .event.is-next .event-status::before{ content:"✦ "; }
+
+  #page-serestate .event.is-past .event-card{
+    opacity:0.82;
+    border-color:rgba(122,201,150,0.45);
+    box-shadow:0 0 0 1px rgba(122,201,150,0.18);
+  }
+  #page-serestate .event.is-past .event-media img{
+    filter:grayscale(0.6);
+  }
+  #page-serestate .event.is-past .event-status{
+    display:inline-block;
+    background:rgba(122,201,150,0.14);
+    color:#a9dcb9;
+    border:1px solid rgba(122,201,150,0.45);
+  }
+  #page-serestate .event.is-past .event-status::before{ content:"✓ "; }
+  #page-serestate .event.is-past .event-card:hover{
+    transform:none;
+    box-shadow:0 0 0 1px rgba(122,201,150,0.28);
+  }
+
+  #page-serestate .event-kicker{
+    font-size:0.72rem;
+    letter-spacing:0.09em;
+    text-transform:uppercase;
+    color:var(--gold-soft);
+    font-weight:700;
+    margin-bottom:0.3rem;
+  }
+
+  #page-serestate .event-date{
+    font-size:0.78rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--mint);
+    font-weight:600;
+  }
+
+  #page-serestate .event-time{
+    color:rgba(244,237,224,0.55);
+    font-weight:500;
+    letter-spacing:0.03em;
+    text-transform:none;
+  }
+
+  #page-serestate .event-title{
+    font-family:'Fraunces', serif;
+    font-size:1.4rem;
+    font-weight:600;
+    margin-top:0.35rem;
+    color:var(--cream);
+  }
+
+  #page-serestate .event-artist{
+    margin-top:0.3rem;
+    font-size:0.98rem;
+    color:rgba(244,237,224,0.72);
+  }
+
+  #page-serestate .event-tag{
+    display:inline-block;
+    margin-top:0.75rem;
+    font-size:0.72rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    padding:0.25rem 0.65rem;
+    border-radius:999px;
+    font-weight:600;
+  }
+  #page-serestate .event.is-cancelled .event-card{
+    border-color:rgba(201,112,126,0.55);
+    box-shadow:0 0 0 1px rgba(201,112,126,0.3);
+    opacity:0.9;
+  }
+  #page-serestate .event.is-cancelled .event-status{
+    display:inline-block;
+    background:rgba(201,112,126,0.18);
+    color:var(--rose);
+    border:1px solid rgba(201,112,126,0.5);
+  }
+  #page-serestate .event.is-cancelled .event-status::before{ content:"✕ "; }
+  #page-serestate .event.is-cancelled .event-media{ position:relative; }
+  #page-serestate .event.is-cancelled .event-media::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:rgba(20,10,12,0.45);
+  }
+  #page-serestate .tag-ballo{ background:rgba(143,217,196,0.14); color:var(--mint); }
+  #page-serestate .tag-tribute{ background:rgba(201,112,126,0.16); color:var(--rose); }
+  #page-serestate .tag-festival{ background:rgba(232,182,74,0.16); color:var(--gold-soft); }
+
+  /* Galleria ricordi: invisibile finché vuota, appare da sola con le foto */
+  #page-serestate .event-gallery{
+  display:none;
+}
+
+#page-serestate .event-gallery:has(img){
+  display:flex;
+  flex-wrap:wrap;
+  gap:0.5rem;
+  margin-top:1rem;
+  padding-top:1rem;
+  border-top:1px solid var(--line);
+}
+
+#page-serestate .event-gallery:has(img)::before{
+  content:"Grazie per essere venuti! 📸";
+  width:100%;
+  font-size:0.8rem;
+  font-weight:600;
+  color:var(--gold-soft);
+  margin-bottom:0.2rem;
+}
+
+#page-serestate .event-gallery img{
+  width:calc(33.333% - 0.4rem);
+  aspect-ratio:1/1;
+  object-fit:cover;
+  border-radius:8px;
+  flex:0 0 auto;
+}
+
+  /* ---------- Menu section ---------- */
+  #page-serestate .menu-section{
+    max-width:var(--max-w);
+    margin:0 auto;
+    padding:0 1.5rem 5rem;
+    text-align:center;
+  }
+  #page-serestate .menu-section h2{
+    font-size:clamp(1.6rem, 4vw, 2.1rem);
+    font-weight:600;
+    color:var(--cream);
+  }
+  #page-serestate .menu-section p.sub{
+    max-width:560px;
+    margin:1rem auto 2.4rem;
+    color:rgba(244,237,224,0.7);
+    font-size:1rem;
+  }
+
+  #page-serestate .menu-grid{
+    display:grid;
+    gap:1.2rem;
+    grid-template-columns:1fr;
+    text-align:left;
+  }
+  @media (min-width:640px){
+    #page-serestate .menu-grid{ grid-template-columns:repeat(3, 1fr); }
+  }
+
+  #page-serestate .menu-card{
+    display:flex;
+    flex-direction:column;
+    gap:0.9rem;
+    background:linear-gradient(160deg, rgba(22,41,92,0.55), rgba(13,27,61,0.55));
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:1.5rem;
+    transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  #page-serestate .menu-card:hover{
+    border-color:var(--line-strong);
+    transform:translateY(-2px);
+    box-shadow:0 10px 30px -12px rgba(0,0,0,0.5);
+  }
+
+  #page-serestate .menu-icon{
+    width:34px;
+    height:34px;
+    color:var(--gold-soft);
+  }
+
+  #page-serestate .menu-card h3{
+    font-size:1.1rem;
+    font-weight:600;
+    color:var(--cream);
+  }
+
+  #page-serestate .menu-card p{
+    font-size:0.9rem;
+    color:rgba(244,237,224,0.65);
+    margin:0;
+    flex-grow:1;
+  }
+
+  #page-serestate .menu-download{
+    display:inline-flex;
+    align-items:center;
+    gap:0.4rem;
+    font-size:0.85rem;
+    font-weight:600;
+    color:var(--mint);
+    text-decoration:none;
+    border-bottom:1px solid rgba(143,217,196,0.4);
+    align-self:flex-start;
+  }
+  #page-serestate .menu-download:hover{ border-color:var(--mint); }
+
+  /* ---------- Ricordi edizione precedente (video YouTube) ---------- */
+  #page-serestate .ricordi{
+    max-width:1100px;
+    margin:0 auto;
+    padding:0 1.5rem 5rem;
+    text-align:center;
+  }
+  #page-serestate .ricordi h2{
+    font-size:clamp(1.6rem, 4vw, 2.1rem);
+    font-weight:600;
+    font-style:italic;
+    color:var(--gold-soft);
+  }
+  #page-serestate .ricordi p.sub{
+    max-width:560px;
+    margin:1rem auto 2.4rem;
+    color:rgba(244,237,224,0.7);
+    font-size:1rem;
+  }
+
+  #page-serestate .ricordi-grid{
+    display:grid;
+    gap:1.4rem;
+    grid-template-columns:1fr;
+  }
+  @media (min-width:640px){
+    #page-serestate .ricordi-grid{ grid-template-columns:repeat(2, 1fr); }
+  }
+  @media (min-width:1000px){
+    #page-serestate .ricordi-grid{ grid-template-columns:repeat(3, 1fr); }
+  }
+
+  #page-serestate .ricordi-card{
+    background:linear-gradient(160deg, rgba(22,41,92,0.55), rgba(13,27,61,0.55));
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
+    transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  #page-serestate .ricordi-card:hover{
+    border-color:var(--line-strong);
+    transform:translateY(-2px);
+    box-shadow:0 10px 30px -12px rgba(0,0,0,0.5);
+  }
+
+  #page-serestate .ricordi-video{
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
+    background:var(--night);
+  }
+  #page-serestate .ricordi-video iframe{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    border:0;
+    display:block;
+  }
+
+  #page-serestate .ricordi-caption{
+    padding:0.9rem 1.1rem 1.1rem;
+    font-size:0.88rem;
+    color:rgba(244,237,224,0.7);
+    text-align:left;
+  }
+.event-video-wrap {
+  margin-top: 1.25rem;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.event-video-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.event-video-label svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.event-video {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+.event-video iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* leggero effetto hover sul contenitore, coerente con altre card interattive */
+.event-video-wrap:hover {
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+}
+  /* ---------- Info footer ---------- */
+  #page-serestate .info{
+    background:var(--night);
+    border-top:1px solid var(--line);
+    padding:4rem 1.5rem 3rem;
+  }
+  #page-serestate .info-inner{
+    max-width:var(--max-w);
+    margin:0 auto;
+    display:grid;
+    gap:2.2rem;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width:640px){
+    #page-serestate .info-inner{ grid-template-columns: 1.3fr 1fr; }
+  }
+
+  #page-serestate .info h3{
+    font-size:1.15rem;
+    font-weight:600;
+    color:var(--gold-soft);
+    margin-bottom:0.6rem;
+  }
+  #page-serestate .info p, #page-serestate .info a.link{
+    color:rgba(244,237,224,0.78);
+    font-size:0.98rem;
+  }
+  #page-serestate .info a.link{
+    display:inline-block;
+    margin-top:0.4rem;
+    color:var(--mint);
+    text-decoration:none;
+    border-bottom:1px solid rgba(143,217,196,0.35);
+  }
+  #page-serestate .info a.link:hover{ border-color:var(--mint); }
+
+  #page-serestate .badge-free{
+    display:inline-flex;
+    align-items:center;
+    gap:0.4rem;
+    margin-top:1.2rem;
+    font-size:0.85rem;
+    color:var(--gold-soft);
+  }
+
+  #page-serestate footer.credits{
+    text-align:center;
+    padding:2rem 1.5rem 3rem;
+    font-size:0.8rem;
+    color:rgba(244,237,224,0.35);
+  }
+
+  /* Accessibility */
+  #page-serestate a:focus-visible, #page-serestate button:focus-visible{
+    outline:2px solid var(--gold);
+    outline-offset:3px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #page-serestate *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  }
+
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans flex flex-col min-h-screen">
+
+  <!-- ================= HEADER & NAVIGATION ================= -->
+  <header class="sticky top-0 z-50 bg-brand-950 text-white shadow-lg border-b border-brand-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center gap-3 h-20">
+        
+        <!-- Logo & Title -->
+        <a href="#home" onclick="navigateTo('home')" class="flex items-center gap-3 group min-w-0">
+          <div class="relative shrink-0">
+            <img src="logo.png" alt="Logo Pro Loco San Bassano" class="h-12 w-auto bg-white p-1 rounded-lg shadow-sm">
+            <!-- Sigillo 30° Anniversario -->
+            <div class="anniversary-seal absolute -top-2.5 -right-2.5 w-9 h-9 rounded-full bg-gradient-to-br from-amber-300 via-amber-500 to-amber-600 border-2 border-white shadow-md flex flex-col items-center justify-center leading-none" title="30° Anniversario Pro Loco San Bassano">
+              <span class="font-heading font-extrabold text-[11px] text-brand-950">30°</span>
+            </div>
+          </div>
+          <div>
+            <span class="font-heading font-extrabold text-xl sm:text-2xl tracking-tight block text-white leading-none">
+              Pro Loco <span class="text-amber-400">San Bassano</span>
+            </span>
+            <span class="text-xs text-emerald-300 font-medium tracking-widest uppercase mt-1 block">Associazione di promozione sociale</span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Menu -->
+        <nav class="hidden md:flex items-center gap-1 lg:gap-2 header-nav ml-auto">
+          <button onclick="navigateTo('home')" data-nav="home" class="nav-btn px-3 py-2 rounded-md text-sm font-semibold transition hover:bg-white/10 text-white active">Home page</button>
+          <button onclick="navigateTo('attivita')" data-nav="attivita" class="nav-btn px-3 py-2 rounded-md text-sm font-semibold transition hover:bg-white/10 text-emerald-100">Le attività</button>
+          <button onclick="navigateTo('comunicazioni')" data-nav="comunicazioni" class="nav-btn px-3 py-2 rounded-md text-sm font-semibold transition hover:bg-white/10 text-emerald-100">Comunicazioni</button>
+          <button onclick="navigateTo('direttivo')" data-nav="direttivo" class="nav-btn px-3 py-2 rounded-md text-sm font-semibold transition hover:bg-white/10 text-emerald-100">Il Direttivo</button>
+          <button onclick="navigateTo('contattaci')" data-nav="contattaci" class="nav-btn px-3 py-2 rounded-md text-sm font-semibold transition hover:bg-white/10 text-emerald-100">Contattaci</button>
+          <button onclick="navigateTo('serestate')" data-nav="serestate" class="nav-btn px-3 py-2 rounded-md text-sm font-semibold transition hover:bg-white/10 text-amber-300">SeRestate 2026</button>
+          
+          <!-- Special CTA for 5x1000 -->
+          <button onclick="navigateTo('5x1000')" data-nav="5x1000" class="nav-btn ml-2 px-4 py-2 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-400 text-brand-950 shadow-sm transition transform hover:-translate-y-0.5 flex items-center gap-1.5">
+            <i class="fa-solid fa-heart text-red-700"></i>
+            5X1000
+          </button>
+        </nav>
+
+        <!-- Mobile Menu Toggle Button -->
+        <div class="md:hidden flex items-center">
+          <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2 rounded-md text-emerald-200 hover:text-white hover:bg-white/10 focus:outline-none">
+            <i class="fa-solid fa-bars text-2xl"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-menu" class="hidden md:hidden bg-brand-900 border-t border-brand-800 px-4 pt-3 pb-6 space-y-2">
+      <button onclick="navigateTo('home')" class="w-full text-left px-3 py-2.5 rounded-md font-medium text-white hover:bg-brand-800">Home page</button>
+      <button onclick="navigateTo('attivita')" class="w-full text-left px-3 py-2.5 rounded-md font-medium text-emerald-100 hover:bg-brand-800">Le attività</button>
+      <button onclick="navigateTo('comunicazioni')" class="w-full text-left px-3 py-2.5 rounded-md font-medium text-emerald-100 hover:bg-brand-800">Comunicazioni</button>
+      <button onclick="navigateTo('direttivo')" class="w-full text-left px-3 py-2.5 rounded-md font-medium text-emerald-100 hover:bg-brand-800">Il Direttivo</button>
+      <button onclick="navigateTo('contattaci')" class="w-full text-left px-3 py-2.5 rounded-md font-medium text-emerald-100 hover:bg-brand-800">Contattaci</button>
+      <button onclick="navigateTo('serestate')" class="w-full text-left px-3 py-2.5 rounded-md font-semibold text-amber-300 hover:bg-brand-800">SeRestate 2026</button>
+      <button onclick="navigateTo('5x1000')" class="w-full text-center mt-2 px-4 py-3 rounded-md font-bold bg-amber-500 text-brand-950 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-heart text-red-700"></i> Sostienici con il 5X1000
+      </button>
+    </div>
+  </header>
+  <!-- ================= MAIN CONTENT AREA ================= -->
+  <main class="flex-grow">
+
+    <!-- ---------------- PAGE 1: HOME PAGE ---------------- -->
+    <section id="page-home" class="page-section active">
+      
+      <!-- Hero Banner -->
+      <div class="hero-pattern relative text-white py-16 lg:py-24 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-brand-950/50 to-brand-950 pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div class="text-center max-w-4xl mx-auto">
+            
+            <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-800/80 text-emerald-200 border border-emerald-700/50 mb-4">
+              <i class="fa-solid fa-location-dot text-amber-400"></i> San Bassano (Cremona)
+            </span>
+
+            <!-- Hero Main Badge / Box -->
+            <div class="p-8 sm:p-12 rounded-3xl border-2 border-white/20 bg-white/5 backdrop-blur-md shadow-2xl mb-8">
+              <div class="anniversary-badge inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-amber-400/20 border border-amber-400/50 text-amber-300 mb-5 shadow-sm">
+                <i class="fa-solid fa-star text-amber-400 text-[11px]"></i>
+                <span class="text-[11px] sm:text-[12px] font-bold tracking-[0.2em] uppercase leading-none">30° Anniversario</span>
+              </div>
+              <h1 class="font-heading text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-2">
+                Proloco San Bassano <span class="text-amber-400 font-normal text-3xl sm:text-5xl">APS</span>
+              </h1>
+              <p class="text-emerald-100 text-lg sm:text-xl font-light mt-4 max-w-2xl mx-auto">
+                Promuoviamo il territorio, valorizziamo la cultura e uniamo la nostra comunità con passione ed entusiasmo.
+              </p>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex flex-wrap justify-center gap-4">
+              <button onclick="navigateTo('attivita')" class="px-6 py-3.5 rounded-xl font-bold bg-amber-500 hover:bg-amber-400 text-brand-950 shadow-lg transition transform hover:-translate-y-0.5 flex items-center gap-2">
+                <i class="fa-solid fa-calendar-days"></i> Scopri le Attività
+              </button>
+              <button onclick="navigateTo('comunicazioni')" class="px-6 py-3.5 rounded-xl font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition flex items-center gap-2">
+                <i class="fa-solid fa-bullhorn"></i> Ultimi Avvisi
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Welcome Section (Con Logo Inserito) -->
+      <div class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- Left Column: Official Logo -->
+            <div class="lg:col-span-5 flex justify-center">
+              <div class="bg-slate-50 p-6 rounded-3xl border border-slate-200 shadow-sm text-center max-w-sm w-full">
+                <img src="logo.png" alt="Logo Pro Loco San Bassano APS" class="w-full h-auto mx-auto drop-shadow-md">
+              </div>
+            </div>
+
+            <!-- Right Column: Welcome Text -->
+            <div class="lg:col-span-7 space-y-6">
+              <span class="text-xs font-bold uppercase tracking-widest text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">Chi Siamo</span>
+              <h2 class="font-heading text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight">
+                Al servizio del nostro paese e delle sue tradizioni
+              </h2>
+              
+              <div class="space-y-4 text-slate-600 text-lg leading-relaxed">
+                <p>
+                  La <strong class="text-slate-900">Proloco di San Bassano APS</strong> è un'associazione senza scopo di lucro, il cui scopo sociale è quello di promuovere e valorizzare l'ambiente, la cultura e le tradizioni del territorio sanbassanese.
+                </p>
+                <p>
+                  Il suo obiettivo principale è organizzare eventi, feste, sagre e iniziative culturali per far conoscere le tradizioni, il patrimonio artistico e le attrazioni turistiche locali.
+                </p>
+              </div>
+
+              <!-- Tagline -->
+              <div class="p-6 rounded-2xl bg-gradient-to-r from-emerald-50 to-amber-50 border-l-4 border-amber-500 shadow-sm mt-6">
+                <p class="text-xl sm:text-2xl font-bold italic text-brand-950 font-heading">
+                  "Siamo il tuo punto di riferimento alla scoperta del nostro territorio !"
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- 30° Anniversario -->
+      <section class="relative overflow-hidden bg-brand-950 text-white border-y border-brand-900">
+        <div class="absolute inset-0 opacity-30 pointer-events-none" style="background-image: radial-gradient(rgba(255,255,255,0.09) 1px, transparent 1px); background-size: 24px 24px;"></div>
+        <div class="absolute -top-28 -right-28 w-80 h-80 rounded-full border border-amber-400/20 pointer-events-none"></div>
+        <div class="absolute -top-12 -right-12 w-52 h-52 rounded-full border border-amber-400/10 pointer-events-none"></div>
+        <div class="absolute -bottom-32 -left-32 w-72 h-72 rounded-full bg-emerald-700/10 blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24 relative z-10">
+          <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-10 lg:gap-16 items-center">
+
+            <div class="flex justify-center lg:justify-end">
+              <div class="relative text-center">
+                <div class="absolute inset-0 rounded-full bg-amber-400/10 blur-3xl scale-110"></div>
+                <div class="relative w-64 h-64 sm:w-72 sm:h-72 rounded-full border border-amber-300/30 bg-white/[0.04] backdrop-blur-sm shadow-2xl flex flex-col items-center justify-center">
+                  <div class="font-heading text-[7.5rem] sm:text-[8.5rem] font-extrabold leading-[0.78] tracking-[-0.08em] text-amber-400 drop-shadow-lg">30</div>
+                  <div class="mt-5 text-sm sm:text-base font-extrabold uppercase tracking-[0.35em] text-amber-100">anni</div>
+                  <div class="absolute -bottom-3 px-4 py-1.5 rounded-full bg-amber-400 text-brand-950 text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.16em] shadow-lg">
+                    1996 — 2026
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-center lg:text-left">
+              <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-[0.18em] bg-amber-400/10 text-amber-300 border border-amber-400/30">
+                <i class="fa-solid fa-star text-[10px]"></i>
+                30° Anniversario
+              </span>
+
+              <h2 class="font-heading mt-5 text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05]">
+                Da trent'anni,<br>
+                <span class="text-amber-400">insieme a San Bassano.</span>
+              </h2>
+
+              <p class="mt-6 text-base sm:text-lg text-emerald-100/80 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                Dal 1996 la Pro Loco accompagna la vita del paese, custodendo le tradizioni, creando occasioni d'incontro e valorizzando la nostra comunità.
+              </p>
+
+              <div class="mt-8 flex items-center justify-center lg:justify-start gap-4">
+                <div class="h-px w-14 bg-amber-400/60"></div>
+                <span class="text-xs sm:text-sm font-bold uppercase tracking-[0.22em] text-emerald-200">
+                  Una storia che continua
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Key Pillars Cards -->
+      <div class="py-16 bg-slate-100 border-y border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center max-w-2xl mx-auto mb-12">
+            <h2 class="font-heading text-3xl font-bold text-slate-900">Cosa Facciamo</h2>
+            <p class="text-slate-600 mt-2">I nostri impegni quotidiani per rendere vivo San Bassano</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition">
+              <div class="w-14 h-14 bg-emerald-100 text-emerald-800 rounded-xl flex items-center justify-center text-2xl mb-6">
+                <i class="fa-solid fa-utensils"></i>
+              </div>
+              <h3 class="font-heading text-xl font-bold text-slate-900 mb-3">Eventi & Sagre</h3>
+              <p class="text-slate-600 leading-relaxed">Organizziamo momenti di festa e convivialità, valorizzando i prodotti tipici della tradizione enogastronomica locale.</p>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition">
+              <div class="w-14 h-14 bg-amber-100 text-amber-800 rounded-xl flex items-center justify-center text-2xl mb-6">
+                <i class="fa-solid fa-masks-theater"></i>
+              </div>
+              <h3 class="font-heading text-xl font-bold text-slate-900 mb-3">Cultura e Storia</h3>
+              <p class="text-slate-600 leading-relaxed">Promuoviamo visite guidate, mostre e spettacoli per riscoprire la ricca storia del nostro paese.</p>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition">
+              <div class="w-14 h-14 bg-blue-100 text-blue-800 rounded-xl flex items-center justify-center text-2xl mb-6">
+                <i class="fa-solid fa-people-group"></i>
+              </div>
+              <h3 class="font-heading text-xl font-bold text-slate-900 mb-3">Comunità e Volontariato</h3>
+              <p class="text-slate-600 leading-relaxed">Punto di incontro per cittadini di ogni età, favorendo l'aggregazione, l'inclusione e lo spirito di collaborazione.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+<!-- ===== Carosello Immagini Home ===== -->
+<div class="py-16 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-10">
+      <span class="text-xs font-bold uppercase tracking-widest text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">Galleria</span>
+      <h2 class="font-heading text-3xl font-bold text-slate-900 mt-3">Alcuni Momenti</h2>
+      <p class="text-slate-600 mt-2">Scorci delle nostre feste, sagre ed eventi</p>
+    </div>
+
+    <div class="relative rounded-3xl overflow-hidden shadow-lg border border-slate-200" id="carousel">
+      <!-- Track -->
+      <div id="carousel-track" class="flex transition-transform duration-500 ease-in-out">
+        <div class="min-w-full h-64 sm:h-96">
+          <img src="img/immagine1.png" alt="Momento della festa 1" class="w-full h-full object-cover">
+        </div>
+        <div class="min-w-full h-64 sm:h-96">
+          <img src="img/immagine2.png" alt="Momento della festa 2" class="w-full h-full object-cover">
+        </div>
+        <div class="min-w-full h-64 sm:h-96">
+          <img src="img/immagine3.png" alt="Momento della festa 3" class="w-full h-full object-cover">
+        </div>
+        <div class="min-w-full h-64 sm:h-96">
+          <img src="img/immagine4.png" alt="Momento della festa 4" class="w-full h-full object-cover">
+        </div>
+        <div class="min-w-full h-64 sm:h-96">
+          <img src="img/immagine5.jpeg" alt="Momento della festa 5" class="w-full h-full object-cover">
+        </div>
+        <div class="min-w-full h-64 sm:h-96">
+          <img src="img/immagine6.jpeg" alt="Momento della festa 6" class="w-full h-full object-cover">
+        </div>
+      </div>
+
+      <!-- Frecce -->
+      <button onclick="carouselMove(-1)" aria-label="Immagine precedente" class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-brand-950/70 hover:bg-brand-950 text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <button onclick="carouselMove(1)" aria-label="Immagine successiva" class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-brand-950/70 hover:bg-brand-950 text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+
+      <!-- Dots -->
+      <div id="carousel-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const track = document.getElementById('carousel-track');
+    const dotsWrap = document.getElementById('carousel-dots');
+    const slides = track ? track.children.length : 0;
+    let current = 0;
+    let autoplayTimer = null;
+
+    function renderDots() {
+      dotsWrap.innerHTML = '';
+      for (let i = 0; i < slides; i++) {
+        const dot = document.createElement('button');
+        dot.className = 'w-2.5 h-2.5 rounded-full transition ' + (i === current ? 'bg-amber-400' : 'bg-white/60 hover:bg-white');
+        dot.setAttribute('aria-label', 'Vai alla slide ' + (i + 1));
+        dot.onclick = () => { current = i; update(); resetAutoplay(); };
+        dotsWrap.appendChild(dot);
+      }
+    }
+
+    function update() {
+      track.style.transform = `translateX(-${current * 100}%)`;
+      renderDots();
+    }
+
+    window.carouselMove = function(dir) {
+      current = (current + dir + slides) % slides;
+      update();
+      resetAutoplay();
+    };
+
+    function resetAutoplay() {
+      clearInterval(autoplayTimer);
+      autoplayTimer = setInterval(() => { window.carouselMove(1); }, 5000);
+    }
+
+    if (track && slides > 0) {
+      update();
+      resetAutoplay();
+    }
+  })();
+</script>
+    </section>
+
+    <!-- ---------------- PAGE 2: LE ATTIVITÀ ---------------- -->
+    <section id="page-attivita" class="page-section">
+      <div class="bg-brand-950 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 class="font-heading text-4xl font-extrabold text-white">Le Attività</h1>
+          <p class="text-emerald-200 mt-2">Scopri gli eventi, le manifestazioni e i progetti promossi dalla Pro Loco</p>
+        </div>
+      </div>
+
+      <div class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Featured card: SeRestate 2026 -->
+          <button onclick="navigateTo('serestate')" class="text-left bg-brand-950 rounded-2xl overflow-hidden border border-amber-400/60 shadow-sm hover:shadow-lg transition relative group">
+            <div class="absolute top-3 right-3 z-10 px-3 py-1 rounded-full bg-amber-500 text-brand-950 text-[11px] font-bold uppercase tracking-wide">In evidenza</div>
+            <img src="img/attivita/serestate_2026.jpg" alt="SeRestate 2026" class="w-full h-56 object-contain bg-brand-950 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-emerald-200">
+                <i class="fa-regular fa-calendar text-amber-400"></i> Dal 2 al 28 agosto 2026
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-white italic">SeRestate <span class="text-amber-400 not-italic">2026</span></h3>
+              <p class="text-emerald-100 text-sm leading-relaxed">Ballo liscio, tribute band e la Festa country: sette serate gratuite al Centro Sportivo di San Bassano.</p>
+              <span class="inline-flex items-center gap-2 text-amber-400 text-sm font-semibold group-hover:gap-3 transition-all">Scopri il programma <i class="fa-solid fa-arrow-right"></i></span>
+            </div>
+          </button>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/2_giugno_2026.jpg" alt="Festa della Repubblica 2026" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 2 giugno 2026
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Festa della Repubblica</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/2_memoria_Marzaroli.jpg" alt="II memorial Gilberto Marzaroli" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 18-30 maggio 2026
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">II memorial Gilberto Marzaroli</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/anniversario_30.jpg" alt="30° Anniversario" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 19 aprile 2026
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">30° Anniversario</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/festa_patronale_2026.jpg" alt="Festa Patronale 2026" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 11-19 gennaio 2026
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Festa Patronale</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/concorso_decorazione_natale_2025.png" alt="Concorso per la migliore decorazione di Natale" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 18 gennaio 2026
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Concorso per la migliore decorazione di Natale</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/torneo_scacchi_2026.jpg" alt="Torneo di scacchi 2026" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 11 gennaio 2026
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Torneo di scacchi</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/castagnata_nov_2026.jpg" alt="Castagnata" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 30 novembre 2025
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Castagnata</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/mercatini_bassano_2025.jpg" alt="Mercatini di Natale 2025" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 29 novembre 2025
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Mercatini di Natale</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/jesolo_sand_2025.jpg" alt="Jesolo Sand Nativity 2025" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 29 novembre 2025
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Jesolo Sand Nativity 2025</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/ruota_fortuna_2025.jpg" alt="Ruota della Fortuna" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 29 ottobre 2025
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Ruota della Fortuna</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/palio_2025.jpg" alt="Palio di Lodi 2025" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 5 ottobre 2025
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Palio di Lodi</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/agricleto_2025.jpg" alt="Agricleto 2025" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 18-19 ottobre 2025
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Agricleto</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/serestate_2025.jpg" alt="SeRestate 2025" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 27 luglio - 31 agosto 2025
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">SeRestate 2025</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/festa_country_2025.jpg" alt="Festa Country 2025" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 27 luglio 2025
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Festa Country</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/festa_Repubblica_2025.jpg" alt="Festa della Repubblica 2025" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 2 giugno 2025
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Festa della Repubblica</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/supercoppa_2025.jpg" alt="Supercoppa terza divisione 2025" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 24-25 maggio 2025
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Supercoppa terza divisione</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/primo_Marzaroli_2025.jpg" alt="Primo memorial Gilberto Marzaroli" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 12-24 maggio 2025
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Primo memorial Gilberto Marzaroli</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/scegli_me_2025.jpg" alt="Scegli me" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> Data da definire
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">"Scegli me"</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/pomeriggio_danzante_2025.png" alt="Pomeriggio danzante per il tesseramento" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 23 marzo 2025
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Pomeriggio danzante per il tesseramento</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/palio_2024.jpg" alt="Palio di Lodi 2024" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> 6 ottobre 2024
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Palio di Lodi</h3>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition">
+            <img src="img/attivita/corso_difesa_2024.jpg" alt="Corso di difesa personale" class="w-full h-56 object-contain bg-slate-100 p-2">
+            <div class="p-6 space-y-4">
+              <div class="flex items-center gap-2 text-sm text-slate-500">
+                <i class="fa-regular fa-calendar text-brand-700"></i> Da lunedì 8 ottobre 2024
+              </div>
+              <h3 class="font-heading text-2xl font-extrabold text-slate-900">Corso di difesa personale</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------- PAGE: SERESTATE 2026 ---------------- -->
+    <section id="page-serestate" class="page-section">
+<section class="hero">
+  <canvas id="stars-canvas" aria-hidden="true"></canvas>
+  <div class="hero-content">
+    <span class="eyebrow">Pro Loco San Bassano</span>
+    <h1 class="script">SeRestate<span class="year">2026</span></h1>
+    <p class="lede">La Pro Loco di San Bassano è lieta di invitarvi a partecipare a SeRestate 2026: una serie di serate ricche di musica, balli e divertimento, accompagnate da un eccellente servizio di ristorazione.</p>
+    <p class="patrocinio">Con il patrocinio del Comune di San Bassano</p>
+  </div>
+  <div class="scroll-cue"><span>Il programma</span><span class="dot"></span></div>
+</section>
+
+<section class="intro">
+  <h2>Ogni settimana, una serata da vivere insieme</h2>
+  <p>Dal 2 al 28 agosto, il Centro Sportivo di San Bassano si accende per sette appuntamenti gratuiti. Bar e cucina sempre attivi, ingresso libero per tutti.</p>
+</section>
+
+<section class="calendar" id="programma">
+
+<article class="event" data-date="2026-08-02">
+  <svg class="event-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1l3.09 6.94L22 9l-5.5 5.36L17.8 22 12 18.27 6.2 22l1.3-7.64L2 9l6.91-1.06z"/></svg>
+  <div class="event-card">
+    <span class="event-status"></span>
+    <div class="event-media"><img src="img/festa-country.jpg" alt="Locandina Country San Bassano 2a edizione, 2 agosto 2026" loading="lazy"></div>
+    <div class="event-kicker">Festa country</div>
+    <div class="event-date">Domenica 2 agosto 2026 <span class="event-time">· ore 18:00</span></div>
+    <h3 class="event-title">II° Festival Country</h3>
+    <p class="event-artist">Ospite speciale: Johnny Rossato</p>
+    <span class="event-tag tag-festival">Festival</span>
+    <div class="event-gallery">
+    </div>
+    <div class="event-video-wrap">
+      <div class="event-video-label">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        Guarda il video
+      </div>
+      <div class="event-video">
+        <iframe
+          src="https://www.youtube.com/embed/c1TKdg4C5RA"
+          title="Video II° Festival Country - San Bassano"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          loading="lazy">
+        </iframe>
+      </div>
+    </div>
+  </div>
+</article>
+
+  <article class="event" data-date="2026-08-06">
+    <svg class="event-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1l3.09 6.94L22 9l-5.5 5.36L17.8 22 12 18.27 6.2 22l1.3-7.64L2 9l6.91-1.06z"/></svg>
+    <div class="event-card">
+      <span class="event-status"></span>
+      <div class="event-media"><img src="img/danilo-rancati.jpg" alt="Danilo Rancati Band" loading="lazy"></div>
+      <div class="event-kicker">I giovedì d'estate</div>
+      <div class="event-date">Giovedì 6 agosto 2026 <span class="event-time">· ore 21:00</span></div>
+      <h3 class="event-title">Danilo Rancati Band</h3>
+      <p class="event-artist">Serata di ballo liscio</p>
+      <span class="event-tag tag-ballo">Ballo liscio</span>
+      <div class="event-gallery">
+         </div>
+    <div class="event-video-wrap">
+      <div class="event-video-label">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        Guarda il video
+      </div>
+      <div class="event-video">
+        <iframe
+          src="https://www.youtube.com/embed/rEb5mPiURoA"
+          title="Video II° Festival Country - San Bassano"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          loading="lazy">
+        </iframe>
+      </div>
+    </div>
+  </div>
+  </article>
+
+  <article class="event" data-date="2026-08-13">
+    <svg class="event-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1l3.09 6.94L22 9l-5.5 5.36L17.8 22 12 18.27 6.2 22l1.3-7.64L2 9l6.91-1.06z"/></svg>
+    <div class="event-card">
+      <span class="event-status"></span>
+      <div class="event-media"><img src="img/germano-one.jpg" alt="Germano #ONE" loading="lazy"></div>
+      <div class="event-kicker">I giovedì d'estate</div>
+      <div class="event-date">Giovedì 13 agosto 2026 <span class="event-time">· ore 21:00</span></div>
+      <h3 class="event-title">Germano #ONE</h3>
+      <p class="event-artist">Serata di ballo liscio</p>
+      <span class="event-tag tag-ballo">Ballo liscio</span>
+      <div class="event-gallery">
+       </div>
+    <div class="event-video-wrap">
+      <div class="event-video-label">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        Guarda il video
+      </div>
+      <div class="event-video">
+        <iframe
+          src="https://www.youtube.com/embed/F05m9jji2bg"
+          title="Video II° Festival Country - San Bassano"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          loading="lazy">
+        </iframe>
+      </div>
+    </div>
+  </div> 
+  </article>
+
+  <article class="event" data-date="2026-08-20" data-cancelled="true">
+    <svg class="event-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1l3.09 6.94L22 9l-5.5 5.36L17.8 22 12 18.27 6.2 22l1.3-7.64L2 9l6.91-1.06z"/></svg>
+    <div class="event-card">
+      <span class="event-status"></span>
+      <div class="event-media"><img src="img/laura-talenti.jpg" alt="Laura Talenti Orchestra" loading="lazy"></div>
+      <div class="event-kicker">I giovedì d'estate</div>
+      <div class="event-date">Giovedì 20 agosto 2026 <span class="event-time">· ore 21:00</span></div>
+      <h3 class="event-title">Laura Talenti Orchestra</h3>
+      <p class="event-artist" style="color:var(--rose); font-weight:700;">Serata annullata per maltempo</p>
+      <span class="event-tag tag-ballo">Ballo liscio</span>
+      <div class="event-gallery">
+        <!-- Dopo la serata, incolla qui i tag <img>, es:
+        <img src="img/ricordi/2026-08-20-1.jpg" alt="Foto della serata con Laura Talenti Orchestra">
+        <img src="img/ricordi/2026-08-20-2.jpg" alt="Foto della serata con Laura Talenti Orchestra">
+        -->
+      </div>
+    </div>
+  </article>
+
+  <article class="event" data-date="2026-08-21">
+    <svg class="event-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1l3.09 6.94L22 9l-5.5 5.36L17.8 22 12 18.27 6.2 22l1.3-7.64L2 9l6.91-1.06z"/></svg>
+    <div class="event-card">
+      <span class="event-status"></span>
+      <div class="event-media"><img src="img/effettoliga.jpg" alt="Effettoliga - Ligabue Tribute Band" loading="lazy"></div>
+      <div class="event-kicker">Serata evento: tributo a Ligabue</div>
+      <div class="event-date">Venerdì 21 agosto 2026 <span class="event-time">· ore 21:30</span></div>
+      <h3 class="event-title">Effettoliga</h3>
+      <p class="event-artist">Ligabue Tribute Band</p>
+      <span class="event-tag tag-tribute">Tribute band</span>
+      <div class="event-gallery">
+           </div>
+    <div class="event-video-wrap">
+      <div class="event-video-label">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        Guarda il video
+      </div>
+      <div class="event-video">
+        <iframe
+          src="https://www.youtube.com/embed/vTGVjjdPFJI"
+          title="Video II° Festival Country - San Bassano"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          loading="lazy">
+        </iframe>
+      </div>
+    </div>
+  </div> 
+  </article>
+
+
+  <article class="event" data-date="2026-08-27">
+    <svg class="event-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1l3.09 6.94L22 9l-5.5 5.36L17.8 22 12 18.27 6.2 22l1.3-7.64L2 9l6.91-1.06z"/></svg>
+    <div class="event-card">
+      <span class="event-status"></span>
+      <div class="event-media"><img src="img/gino-e-la-band.jpg" alt="Gino e la Band" loading="lazy"></div>
+      <div class="event-kicker">I giovedì d'estate</div>
+      <div class="event-date">Giovedì 27 agosto 2026 <span class="event-time">· ore 21:00</span></div>
+      <h3 class="event-title">Gino e la Band</h3>
+      <p class="event-artist">Serata di ballo liscio</p>
+      <span class="event-tag tag-ballo">Ballo liscio</span>
+      <div class="event-gallery">
+        <!-- Dopo la serata, incolla qui i tag <img>, es:
+        <img src="img/ricordi/2026-08-27-1.jpg" alt="Foto della serata con Gino e la Band">
+        <img src="img/ricordi/2026-08-27-2.jpg" alt="Foto della serata con Gino e la Band">
+        -->
+      </div>
+    </div>
+  </article>
+
+  <article class="event" data-date="2026-08-28">
+    <svg class="event-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1l3.09 6.94L22 9l-5.5 5.36L17.8 22 12 18.27 6.2 22l1.3-7.64L2 9l6.91-1.06z"/></svg>
+    <div class="event-card">
+      <span class="event-status"></span>
+      <div class="event-media"><img src="img/sensazione-moda.jpg" alt="Sensazione Modà - Modà Tribute Band" loading="lazy"></div>
+      <div class="event-kicker">Serata evento: tributo ai Modà</div>
+      <div class="event-date">Venerdì 28 agosto 2026 <span class="event-time">· ore 21:30</span></div>
+      <h3 class="event-title">Sensazione Modà</h3>
+      <p class="event-artist">Modà Tribute Band</p>
+      <span class="event-tag tag-tribute">Tribute band</span>
+      <div class="event-gallery">
+        <!-- Dopo la serata, incolla qui i tag <img>, es:
+        <img src="img/ricordi/2026-08-28-1.jpg" alt="Foto della serata con Sensazione Modà">
+        <img src="img/ricordi/2026-08-28-2.jpg" alt="Foto della serata con Sensazione Modà">
+        -->
+      </div>
+    </div>
+  </article>
+
+</section>
+
+<section class="menu-section">
+  <h2>I menù delle serate</h2>
+  <p class="sub">Scarica in anteprima i nostri menù </p>
+  <div class="menu-grid">
+
+    <div class="menu-card">
+      <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 16.5h6M9 9.5h2"/></svg>
+      <h3>Festa country</h3>
+      <p>Menù della serata di domenica 2 agosto.</p>
+    </div>
+
+    <div class="menu-card">
+      <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 16.5h6M9 9.5h2"/></svg>
+      <h3>I giovedì di ballo liscio</h3>
+      <p>Menù valido per le serate del 6, 13, 20 e 27 agosto.</p>
+      <a class="menu-download" href="menu/menu-ballo-liscio.pdf" target="_blank" rel="noopener">Scarica il PDF ↓</a>
+    </div>
+
+    <div class="menu-card">
+      <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 16.5h6M9 9.5h2"/></svg>
+      <h3>Serate tributo</h3>
+      <p>Menù valido per le serate del 21 e 28 agosto.</p>
+      <a class="menu-download" href="menu/menu-tribute.pdf" target="_blank" rel="noopener">Scarica il PDF ↓</a>
+    </div>
+  </div>
+</section>
+
+<section class="ricordi">
+  <h2 class="script">Rivivi i ricordi dell'edizione precedente 2025</h2>
+  <p class="sub">Le serate, la musica e il divertimento di SeRestate 2025</p>
+  <div class="ricordi-grid">
+
+    <div class="ricordi-card">
+      <div class="ricordi-video">
+        <iframe src="https://www.youtube-nocookie.com/embed/PHU7wVc69LQ" title="Ricordi SeRestate 2025 - Video 1" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <div class="ricordi-card">
+      <div class="ricordi-video">
+        <iframe src="https://www.youtube-nocookie.com/embed/Tiy5J5tF_0k" title="Ricordi SeRestate 2025 - Video 2" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <div class="ricordi-card">
+      <div class="ricordi-video">
+        <iframe src="https://www.youtube-nocookie.com/embed/G6rB_TuvX10" title="Ricordi SeRestate 2025 - Video 3" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <div class="ricordi-card">
+      <div class="ricordi-video">
+        <iframe src="https://www.youtube-nocookie.com/embed/NzBvG-rDYgI" title="Ricordi SeRestate 2025 - Video 4" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <div class="ricordi-card">
+      <div class="ricordi-video">
+        <iframe src="https://www.youtube-nocookie.com/embed/epBLWJfLTSA" title="Ricordi SeRestate 2025 - Video 5" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <div class="ricordi-card">
+      <div class="ricordi-video">
+        <iframe src="https://www.youtube-nocookie.com/embed/XEoxLeuGExk" title="Ricordi SeRestate 2025 - Video 6" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="info">
+  <div class="info-inner">
+    <div>
+      <h3>Dove</h3>
+      <p>Proloco San Bassano APS<br>c/o Centro Sportivo, Via Nonzola<br>San Bassano</p>
+      <a class="link" href="https://www.google.com/maps/search/?api=1&query=Via+Nonzola+San+Bassano" target="_blank" rel="noopener">Apri la mappa →</a>
+      <div class="badge-free">✦ Ingresso gratuito a tutte le serate</div>
+    </div>
+    <div>
+      <h3>Info e prenotazione tavoli</h3>
+      <p>Cucina e bar aperti tutte le sere dalle ore 19:00.</p>
+      <a class="link" href="tel:+393395610282">Tel. 339 5610282</a>
+    </div>
+  </div>
+  <p style="max-width:920px; margin:2rem auto 0; text-align:center; font-size:0.85rem; color:rgba(244,237,224,0.5);">Gli orari indicati per ogni serata fanno riferimento all'inizio dello spettacolo.</p>
+</section>
+
+<footer class="credits">
+  SeRestate 2026 — Pro Loco San Bassano APS
+</footer>
+    </section>
+
+    <!-- ---------------- PAGE 3: COMUNICAZIONI ---------------- -->
+    <section id="page-comunicazioni" class="page-section">
+      <div class="bg-brand-950 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 class="font-heading text-4xl font-extrabold text-white">Comunicazioni</h1>
+          <p class="text-emerald-200 mt-2">Avvisi ufficiali, verbali e novità dalla Pro Loco San Bassano APS.</p>
+        </div>
+      </div>
+
+      <div class="py-12 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div id="comunicazioni-list">
+          <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <p class="text-slate-600">Caricamento comunicazioni...</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ---------------- PAGE 4: IL DIRETTIVO (AGGIORNATO) ---------------- -->
+    <section id="page-direttivo" class="page-section">
+      <div class="bg-brand-950 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 class="font-heading text-4xl font-extrabold text-white">Il Direttivo</h1>
+          <p class="text-emerald-200 mt-2">Organo esecutivo dell'associazione per il quadriennio 2025-2029.</p>
+        </div>
+      </div>
+
+      <div class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Descrizione ufficiale dell'organo -->
+        <div class="bg-emerald-50 p-8 rounded-3xl border border-emerald-200 mb-12 text-center max-w-4xl mx-auto space-y-4">
+          <p class="text-slate-800 text-lg leading-relaxed">
+            Il Direttivo è l'organo esecutivo dell'associazione e si occupa nel concreto di dare attuazione agli scopi sociali; la nostra associazione prevede che il direttivo sia composto da almeno 7 consiglieri e al suo interno venga designato un presidente, un vice-presidente, un segretario ed un tesoriere.
+          </p>
+          <div class="inline-block bg-brand-900 text-amber-300 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm">
+            <i class="fa-solid fa-calendar-check mr-2"></i>Eletto dall'assemblea ordinaria degli associati il 12 marzo 2025 (Mandato 2025-2029)
+          </div>
+        </div>
+
+        <!-- Cariche Principali -->
+        <h2 class="font-heading text-2xl font-bold text-slate-900 mb-6 text-center">Cariche Esecutive</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          
+          <!-- Presidente -->
+          <div class="bg-white p-6 rounded-2xl border-2 border-amber-400 shadow-md text-center relative overflow-hidden">
+            <div class="absolute top-0 right-0 bg-amber-400 text-brand-950 text-xs font-extrabold px-3 py-1 rounded-bl-lg">Presidenza</div>
+            <div class="w-20 h-20 bg-brand-950 text-amber-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow">
+              <i class="fa-solid fa-user-tie"></i>
+            </div>
+            <h3 class="font-heading text-xl font-extrabold text-slate-900">Lenci Gabriele</h3>
+            <p class="text-sm font-bold text-emerald-800 uppercase tracking-wider mt-1">Presidente</p>
+          </div>
+
+          <!-- Vice Presidente -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <div class="w-20 h-20 bg-brand-900 text-emerald-200 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow">
+              <i class="fa-solid fa-user-check"></i>
+            </div>
+            <h3 class="font-heading text-xl font-extrabold text-slate-900">Sandrini Marco</h3>
+            <p class="text-sm font-bold text-emerald-800 uppercase tracking-wider mt-1">Vice-presidente</p>
+          </div>
+
+          <!-- Segretario e Tesoriere -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center">
+            <div class="w-20 h-20 bg-brand-900 text-emerald-200 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow">
+              <i class="fa-solid fa-file-invoice-dollar"></i>
+            </div>
+            <h3 class="font-heading text-xl font-extrabold text-slate-900">Freschi Elena</h3>
+            <p class="text-sm font-bold text-emerald-800 uppercase tracking-wider mt-1">Segretario e Tesoriere</p>
+          </div>
+
+        </div>
+
+        <!-- Consiglieri -->
+        <h2 class="font-heading text-2xl font-bold text-slate-900 mb-6 text-center">Consiglieri</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 bg-slate-100 text-brand-900 rounded-full flex items-center justify-center text-xl shrink-0 font-bold">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div>
+              <h4 class="font-heading font-bold text-lg text-slate-900">Taverna Aldo</h4>
+              <p class="text-xs text-slate-500 font-medium">Consigliere</p>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 bg-slate-100 text-brand-900 rounded-full flex items-center justify-center text-xl shrink-0 font-bold">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div>
+              <h4 class="font-heading font-bold text-lg text-slate-900">Dovera Giuseppe</h4>
+              <p class="text-xs text-slate-500 font-medium">Consigliere</p>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 bg-slate-100 text-brand-900 rounded-full flex items-center justify-center text-xl shrink-0 font-bold">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div>
+              <h4 class="font-heading font-bold text-lg text-slate-900">Sudati Davide</h4>
+              <p class="text-xs text-slate-500 font-medium">Consigliere</p>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 bg-slate-100 text-brand-900 rounded-full flex items-center justify-center text-xl shrink-0 font-bold">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div>
+              <h4 class="font-heading font-bold text-lg text-slate-900">Brocca Ermes</h4>
+              <p class="text-xs text-slate-500 font-medium">Consigliere</p>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 bg-slate-100 text-brand-900 rounded-full flex items-center justify-center text-xl shrink-0 font-bold">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div>
+              <h4 class="font-heading font-bold text-lg text-slate-900">Taino Claudio</h4>
+              <p class="text-xs text-slate-500 font-medium">Consigliere</p>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 bg-slate-100 text-brand-900 rounded-full flex items-center justify-center text-xl shrink-0 font-bold">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div>
+              <h4 class="font-heading font-bold text-lg text-slate-900">Ribecco Ylenia</h4>
+              <p class="text-xs text-slate-500 font-medium">Consigliere</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ---------------- PAGE 5: CONTATTACI ---------------- -->
+    <section id="page-contattaci" class="page-section">
+      <div class="bg-brand-950 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 class="font-heading text-4xl font-extrabold text-white">Contattaci</h1>
+          <p class="text-emerald-200 mt-2">Siamo a tua disposizione per informazioni, proposte e collaborazioni.</p>
+        </div>
+      </div>
+
+      <div class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-center">
+          <div class="w-full max-w-xl">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+              <h3 class="font-heading text-xl font-bold text-slate-900 mb-4 text-center">Contatti</h3>
+              <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
+                <h4 class="font-heading font-bold text-slate-900 mb-2">Tesseramento 2026</h4>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                  Per richiedere informazioni sul tesseramento 2026, scrivi a
+                  <a href="mailto:prolocosanbassano@libero.it?subject=Informazioni%20tesseramento%202026" class="font-semibold text-brand-700 hover:text-brand-900 underline">prolocosanbassano@libero.it</a>.
+                </p>
+              </div>
+              <div class="space-y-4 text-sm text-slate-600">
+                <a href="mailto:prolocosanbassano@libero.it" class="flex items-center justify-center gap-3 hover:text-brand-700 transition">
+                  <i class="fa-solid fa-envelope text-amber-600"></i>
+                  <span>prolocosanbassano@libero.it</span>
+                </a>
+                <a href="tel:+393395610282" class="flex items-center justify-center gap-3 hover:text-brand-700 transition">
+                  <i class="fa-solid fa-phone text-emerald-600"></i>
+                  <span>339 5610282</span>
+                </a>
+                <a href="https://www.instagram.com/prolocosanbassano/" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-3 hover:text-brand-700 transition">
+                  <i class="fa-brands fa-instagram text-pink-600"></i>
+                  <span>Instagram</span>
+                </a>
+                <a href="https://www.google.com/url?q=https%3A%2F%2Fwww.facebook.com%2Fprolocosanbassano2016&sa=D&sntz=1&usg=AOvVaw1nOQb_aX2ijjN7qjoPnJJD" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-3 hover:text-brand-700 transition">
+                  <i class="fa-brands fa-facebook text-blue-600"></i>
+                  <span>Facebook</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------- PAGE 6: 5X1000 ---------------- -->
+    <section id="page-5x1000" class="page-section">
+      <div class="bg-gradient-to-r from-amber-600 to-amber-700 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 class="font-heading text-4xl font-extrabold text-white">Donaci il tuo 5X1000</h1>
+          <p class="text-amber-100 text-lg mt-2 max-w-2xl mx-auto">Un gesto semplice che per la nostra comunità vale tantissimo.</p>
+        </div>
+      </div>
+
+      <div class="py-12 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white p-8 rounded-3xl border-2 border-amber-400 shadow-xl space-y-6">
+          <h2 class="font-heading text-2xl font-bold text-slate-900 text-center">Sostieni Pro Loco San Bassano APS con il tuo 5x1000</h2>
+          <p class="text-slate-600 leading-relaxed text-center">
+            Da quest’anno puoi supportare le attività della Pro Loco San Bassano APS destinando il tuo 5x1000 in fase di dichiarazione dei redditi.
+          </p>
+          <p class="text-slate-600 leading-relaxed text-center">
+            Si tratta di un gesto semplice, che non comporta alcun costo per te, ma che per la nostra associazione rappresenta un aiuto concreto per continuare a promuovere il territorio, organizzare eventi e valorizzare la comunità.
+          </p>
+
+          <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-left space-y-4">
+            <h3 class="font-heading text-lg font-bold text-slate-900">Come fare:</h3>
+            <ul class="list-disc list-inside space-y-2 text-slate-700">
+              <li>Firma nell’apposito riquadro dedicato al sostegno degli enti del Terzo Settore</li>
+              <li>Inserisci il nostro codice fiscale:</li>
+            </ul>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <span class="text-sm font-semibold text-slate-600">👉 CF</span>
+              <span id="codice-fiscale" class="font-mono text-2xl sm:text-3xl font-extrabold text-brand-950 tracking-wider">93062120196</span>
+              <button onclick="copyCF()" class="px-4 py-2 bg-brand-900 hover:bg-brand-800 text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5">
+                <i class="fa-regular fa-copy"></i> Copia
+              </button>
+            </div>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed text-center font-medium">
+            Con il tuo contributo possiamo fare ancora di più per San Bassano.<br>
+            Grazie per il tuo sostegno!
+          </p>
+          <p id="copy-feedback" class="text-xs text-emerald-600 font-bold hidden text-center"><i class="fa-solid fa-check"></i> Codice Fiscale copiato!</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl z-50 hidden items-center gap-3">
+    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span class="text-sm font-medium">Messaggio inviato con successo!</span>
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-brand-950 text-white border-t border-brand-900 pt-12 pb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-12 border-b border-white/10">
+        
+        <div class="space-y-4 md:col-span-2">
+          <div class="flex items-center gap-3">
+            <img src="logo.png" alt="Logo Pro Loco" class="h-10 w-auto bg-white p-1 rounded">
+            <span class="font-heading font-extrabold text-xl text-white">Pro Loco <span class="text-amber-400">San Bassano</span> APS</span>
+          </div>
+          <p class="text-slate-300 text-sm max-w-md leading-relaxed">
+            Associazione di Promozione Sociale dedicata alla tutela delle tradizioni, promozione turistica e crescita culturale del territorio di San Bassano (CR).
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-heading font-bold text-amber-400 mb-4 text-sm uppercase tracking-wider">Link Rapidi</h4>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li><a href="#home" onclick="navigateTo('home')" class="hover:text-white transition">Home page</a></li>
+            <li><a href="#attivita" onclick="navigateTo('attivita')" class="hover:text-white transition">Le attività</a></li>
+            <li><a href="#serestate" onclick="navigateTo('serestate')" class="hover:text-white transition text-amber-300">SeRestate 2026</a></li>
+            <li><a href="#comunicazioni" onclick="navigateTo('comunicazioni')" class="hover:text-white transition">Comunicazioni</a></li>
+            <li><a href="#direttivo" onclick="navigateTo('direttivo')" class="hover:text-white transition">Il Direttivo</a></li>
+            <li><a href="#5x1000" onclick="navigateTo('5x1000')" class="hover:text-white transition">Sostienici 5X1000</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-heading font-bold text-amber-400 mb-4 text-sm uppercase tracking-wider">Contatti</h4>
+          <p class="text-sm text-slate-300 mb-2"><i class="fa-solid fa-location-dot text-amber-400 mr-2"></i> San Bassano (CR)</p>
+          <p class="text-sm text-slate-300"><i class="fa-solid fa-envelope text-amber-400 mr-2"></i> prolocosanbassano@libero.it</p>
+        </div>
+
+      </div>
+
+      <div class="pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-400 gap-4">
+        <p>© Pro Loco San Bassano APS - Tutti i diritti riservati.</p>
+        <p class="text-slate-500">Sito web ufficiale</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Visualizzatore immagini delle attività -->
+  <div id="activity-image-modal" class="hidden fixed inset-0 z-[100] bg-black/85 p-4 sm:p-8 items-center justify-center" role="dialog" aria-modal="true" aria-label="Immagine ingrandita">
+    <button id="activity-image-close" type="button" class="absolute top-4 right-4 sm:top-6 sm:right-6 w-11 h-11 rounded-full bg-white text-slate-900 shadow-lg hover:bg-slate-100 transition" aria-label="Chiudi immagine">
+      <i class="fa-solid fa-xmark text-xl"></i>
+    </button>
+    <img id="activity-image-large" src="" alt="" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl">
+  </div>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    function navigateTo(pageId) {
+      document.querySelectorAll('.page-section').forEach(section => {
+        section.classList.remove('active');
+      });
+
+      const targetPage = document.getElementById('page-' + pageId);
+      if (targetPage) {
+        targetPage.classList.add('active');
+      }
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.getAttribute('data-nav') === pageId) {
+          btn.classList.add('bg-white/10', 'text-white');
+          btn.classList.remove('text-emerald-100');
+        } else if (btn.getAttribute('data-nav') !== '5x1000' && btn.getAttribute('data-nav') !== 'serestate') {
+          btn.classList.remove('bg-white/10', 'text-white');
+          btn.classList.add('text-emerald-100');
+        } else if (btn.getAttribute('data-nav') === 'serestate') {
+          btn.classList.remove('bg-white/10', 'text-white');
+        }
+      });
+
+      document.getElementById('mobile-menu').classList.add('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (pageId === 'serestate') {
+        initSerestate();
+      }
+
+      if (pageId === 'comunicazioni' && window.caricaComunicazioni) {
+        window.caricaComunicazioni();
+      }
+    }
+
+    // Se la pagina si apre già sulla sezione Comunicazioni (o all'avvio), carica i dati
+    document.addEventListener('DOMContentLoaded', () => {
+      const comunicazioniPage = document.getElementById('page-comunicazioni');
+      if (comunicazioniPage && comunicazioniPage.classList.contains('active') && window.caricaComunicazioni) {
+        window.caricaComunicazioni();
+      }
+    });
+
+    /* ===== SeRestate 2026: logica pagina (stelle, reveal, stato serate) ===== */
+    let serestateInitialized = false;
+    let serestateResize = null;
+
+    function initSerestate() {
+      if (serestateInitialized) {
+        // La sezione era nascosta al primo avvio: ricalcola le dimensioni del canvas ora che è visibile
+        if (serestateResize) serestateResize();
+        return;
+      }
+      serestateInitialized = true;
+
+      // Starfield canvas
+      (function(){
+        const canvas = document.getElementById('stars-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let stars = [];
+        let w, h;
+
+        function resize(){
+          w = canvas.width = canvas.offsetWidth * devicePixelRatio;
+          h = canvas.height = canvas.offsetHeight * devicePixelRatio;
+          const count = Math.floor((w * h) / 9000);
+          stars = Array.from({length: count}, () => ({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            r: Math.random() * 1.3 + 0.3,
+            baseAlpha: Math.random() * 0.6 + 0.3,
+            phase: Math.random() * Math.PI * 2,
+            speed: Math.random() * 0.015 + 0.005
+          }));
+        }
+        serestateResize = resize;
+
+        function draw(t){
+          ctx.clearRect(0, 0, w, h);
+          for(const s of stars){
+            const alpha = reduceMotion
+              ? s.baseAlpha
+              : s.baseAlpha * (0.6 + 0.4 * Math.sin(s.phase + t * s.speed));
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(244,237,224,${alpha})`;
+            ctx.fill();
+          }
+          if(!reduceMotion){
+            requestAnimationFrame(draw);
+          }
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        requestAnimationFrame(draw);
+      })();
+
+      // Reveal event cards on scroll
+      (function(){
+        const items = document.querySelectorAll('#page-serestate .event');
+        if(!('IntersectionObserver' in window)){
+          items.forEach(el => el.classList.add('in-view'));
+          return;
+        }
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if(entry.isIntersecting){
+              entry.target.classList.add('in-view');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15 });
+        items.forEach(el => io.observe(el));
+      })();
+
+      // Segna le serate già svolte e la prossima in programma
+      (function(){
+        const items = document.querySelectorAll('#page-serestate .event[data-date]');
+        if(!items.length) return;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let nextEl = null;
+        let nextDate = null;
+
+        items.forEach(el => {
+          const eventDate = new Date(el.dataset.date + 'T00:00:00');
+          const statusEl = el.querySelector('.event-status');
+          const isCancelled = el.dataset.cancelled === 'true';
+
+          if(isCancelled){
+            el.classList.add('is-cancelled');
+            if(statusEl) statusEl.textContent = 'Serata annullata';
+            return;
+          }
+
+          if(eventDate < today){
+            el.classList.add('is-past');
+            if(statusEl) statusEl.textContent = 'Serata conclusa';
+          } else if(!nextDate || eventDate < nextDate){
+            nextDate = eventDate;
+            nextEl = el;
+          }
+        });
+
+        if(nextEl){
+          nextEl.classList.add('is-next');
+          const statusEl = nextEl.querySelector('.event-status');
+          if(statusEl) statusEl.textContent = 'Prossima serata';
+        }
+      })();
+    }
+
+    function toggleMobileMenu() {
+      document.getElementById('mobile-menu').classList.toggle('hidden');
+    }
+
+    function copyCF() {
+      const cfText = document.getElementById('codice-fiscale').innerText;
+      navigator.clipboard.writeText(cfText).then(() => {
+        const feedback = document.getElementById('copy-feedback');
+        feedback.classList.remove('hidden');
+        setTimeout(() => feedback.classList.add('hidden'), 3000);
+      });
+    }
+
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      const toast = document.getElementById('toast');
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      event.target.reset();
+      setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 4000);
+    }
+
+    /* Ingrandimento delle immagini nella pagina Le Attività */
+    (function initActivityImageViewer() {
+      const modal = document.getElementById('activity-image-modal');
+      const largeImage = document.getElementById('activity-image-large');
+      const closeButton = document.getElementById('activity-image-close');
+      const activityImages = document.querySelectorAll('#page-attivita div.bg-white > img[src^="img/attivita/"]');
+
+      if (!modal || !largeImage || !closeButton) return;
+
+      function openImage(image) {
+        largeImage.src = image.src;
+        largeImage.alt = image.alt;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+        closeButton.focus();
+      }
+
+      function closeImage() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        largeImage.src = '';
+        document.body.style.overflow = '';
+      }
+
+      activityImages.forEach(image => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'mx-6 mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-700 hover:text-brand-900 transition';
+        button.setAttribute('aria-label', `Ingrandisci: ${image.alt}`);
+        button.innerHTML = '<i class="fa-solid fa-magnifying-glass-plus"></i><span>Ingrandisci foto</span>';
+        button.addEventListener('click', () => openImage(image));
+        image.insertAdjacentElement('afterend', button);
+      });
+
+      closeButton.addEventListener('click', closeImage);
+      modal.addEventListener('click', event => {
+        if (event.target === modal) closeImage();
+      });
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !modal.classList.contains('hidden')) closeImage();
+      });
+    })();
+  </script>
+
+</body>
+</html>
