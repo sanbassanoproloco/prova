@@ -40,9 +40,14 @@
         <h1 class="font-heading text-2xl font-extrabold">Gestione Comunicazioni</h1>
         <p class="text-emerald-200 text-sm mt-1">Pro Loco San Bassano APS — Pannello riservato al Direttivo</p>
       </div>
-      <button id="btn-logout" class="hidden text-sm px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition">
-        <i class="fa-solid fa-right-from-bracket mr-1"></i> Esci
-      </button>
+      <div class="flex items-center gap-2">
+        <a href="index.html" class="text-sm px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition">
+          <i class="fa-solid fa-arrow-left mr-1"></i> Torna al sito
+        </a>
+        <button id="btn-logout" class="hidden text-sm px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition">
+          <i class="fa-solid fa-right-from-bracket mr-1"></i> Esci
+        </button>
+      </div>
     </div>
   </header>
 
@@ -148,7 +153,7 @@
         await signInWithEmailAndPassword(auth, email, password);
       } catch (err) {
         console.error('Errore login Firebase:', err);
-        errorEl.textContent = 'Accesso non riuscito (' + (err.code || err.message) + '). Apri la Console del browser (F12) per i dettagli.';
+        errorEl.textContent = 'Email o password errati.';
         errorEl.classList.remove('hidden');
       }
     });
@@ -222,9 +227,11 @@
     });
 
     // ---------- ELENCO ----------
-    async function caricaElenco() {
+    async function caricaElenco(isRetry = false) {
       const listEl = document.getElementById('comm-list');
-      listEl.innerHTML = '<p class="text-slate-500 text-sm">Caricamento...</p>';
+      if (!isRetry) {
+        listEl.innerHTML = '<p class="text-slate-500 text-sm">Caricamento...</p>';
+      }
       try {
         const q = query(collection(db, 'comunicazioni'), orderBy('data', 'desc'));
         const snap = await getDocs(q);
@@ -295,7 +302,11 @@
           listEl.appendChild(card);
         });
       } catch (err) {
-        console.error(err);
+        console.error('Errore caricamento elenco:', err);
+        if (!isRetry) {
+          setTimeout(() => caricaElenco(true), 700);
+          return;
+        }
         listEl.innerHTML = '<p class="text-red-600 text-sm">Errore nel caricamento delle comunicazioni.</p>';
       }
     }
