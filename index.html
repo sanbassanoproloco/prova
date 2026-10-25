@@ -335,6 +335,30 @@
       margin: 0 auto;
       padding: 64px 32px 58px;
     }
+    .home-weather {
+      position: absolute;
+      z-index: 3;
+      top: 24px;
+      right: max(24px, calc((100vw - 1320px) / 2 + 32px));
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 190px;
+      padding: 13px 17px;
+      color: #fff8eb;
+      background: rgba(21, 40, 34, 0.72);
+      border: 1px solid rgba(243, 185, 95, 0.45);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+      backdrop-filter: blur(8px);
+    }
+    .home-weather__icon { color: #f3b95f; font-size: 1.8rem; width: 32px; text-align: center; }
+    .home-weather__temp { font: 700 1.65rem/1 'Fraunces', Georgia, serif; }
+    .home-weather__details { display: flex; flex-direction: column; gap: 4px; }
+    .home-weather__condition { font-size: .8rem; font-weight: 700; }
+    .home-weather__place { color: rgba(255,248,235,.72); font-size: .68rem; }
+    .home-weather__credit { position: absolute; right: 8px; bottom: -15px; font-size: 9px; color: rgba(255,248,235,.7); }
+    .home-weather__credit a { color: inherit; text-decoration: underline; }
     .autumn-hero .eyebrow-pill {
       display: inline-flex;
       align-items: center;
@@ -1277,6 +1301,18 @@
       .autumn-hero__inner {
         padding: 44px 20px;
       }
+      .home-weather {
+        top: 14px;
+        right: 14px;
+        min-width: 0;
+        gap: 8px;
+        padding: 9px 11px;
+        border-radius: 14px;
+      }
+      .home-weather__icon { font-size: 1.35rem; width: 24px; }
+      .home-weather__temp { font-size: 1.25rem; }
+      .home-weather__condition { font-size: .68rem; }
+      .home-weather__place { font-size: .6rem; }
       .autumn-hero__actions button {
         padding: 12px 18px;
         font-size: 0.82rem;
@@ -1414,12 +1450,21 @@
     <!-- ---------------- PAGE 1: HOME PAGE ---------------- -->
     <section id="page-home" class="page-section active">
       <section class="autumn-hero" aria-label="Pro Loco San Bassano">
+        <aside id="home-weather" class="home-weather" aria-label="Meteo a San Bassano" aria-live="polite">
+          <i class="home-weather__icon fa-solid fa-cloud-sun" aria-hidden="true"></i>
+          <div class="home-weather__details">
+            <span class="home-weather__temp">--°</span>
+            <span class="home-weather__condition">Meteo in caricamento</span>
+            <span class="home-weather__place">San Bassano (CR)</span>
+          </div>
+          <span class="home-weather__credit">Dati <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a></span>
+        </aside>
         <div class="autumn-hero__inner">
           <div class="eyebrow-pill">
-            <i class="fa-solid fa-landmark"></i> Pro Loco San Bassano APS
+            Pro Loco San Bassano APS
           </div>
           <h1>Insieme <em>per il nostro territorio</em></h1>
-          <p class="autumn-hero__lede">Cultura, eventi, tradizioni e comunità<br class="hidden sm:block"> nei caldi colori dell'autunno a San Bassano.</p>
+          <p class="autumn-hero__lede">Cultura, eventi, tradizioni e comunità<br class="hidden sm:block"> a San Bassano.</p>
           <div class="autumn-hero__actions">
             <button onclick="navigateTo('attivita')" class="button-primary">
               <i class="fa-regular fa-calendar-days"></i> Scopri gli eventi <i class="fa-solid fa-arrow-right"></i>
@@ -1434,10 +1479,10 @@
       <nav class="values-strip" aria-label="I valori della Pro Loco">
         <div class="values-strip__inner">
           <div class="value-item"><span><i class="fa-solid fa-people-group"></i></span><div><b>Comunità</b><small>Persone, idee, territorio</small></div></div>
-          <div class="value-item"><span><i class="fa-solid fa-landmark"></i></span><div><b>Tradizioni</b><small>Le nostre radici</small></div></div>
-          <div class="value-item"><span><i class="fa-solid fa-mug-hot"></i></span><div><b>Eventi</b><small>Vivere il paese</small></div></div>
-          <div class="value-item"><span><i class="fa-solid fa-mountain-sun"></i></span><div><b>Territorio</b><small>Natura e bellezza</small></div></div>
-          <div class="value-item"><span><i class="fa-solid fa-heart"></i></span><div><b>Volontariato</b><small>Insieme, ogni giorno</small></div></div>
+          <div class="value-item"><span><i class="fa-solid fa-scroll"></i></span><div><b>Tradizioni</b><small>Le nostre radici</small></div></div>
+          <div class="value-item"><span><i class="fa-regular fa-calendar-days"></i></span><div><b>Eventi</b><small>Vivere il paese</small></div></div>
+          <div class="value-item"><span><i class="fa-solid fa-wheat-awn"></i></span><div><b>Territorio</b><small>Natura e bellezza</small></div></div>
+          <div class="value-item"><span><i class="fa-solid fa-handshake-angle"></i></span><div><b>Volontariato</b><small>Insieme, ogni giorno</small></div></div>
         </div>
       </nav>
 
@@ -2057,14 +2102,9 @@
     <section id="page-comunicazioni" class="page-section">
       <div class="autumn-page-banner">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div class="flex items-start justify-between gap-4 mb-2">
-            <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-300">
-              <i class="fa-regular fa-newspaper"></i> Bacheca Associativa
-            </span>
-            <a href="./admin.html" target="_blank" rel="noopener noreferrer" aria-label="Apri il pannello amministrativo" title="Pannello amministrativo" class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-amber-100/25 bg-black/10 px-3 py-1.5 text-xs font-semibold text-amber-100/80 transition hover:border-amber-200/50 hover:bg-black/20 hover:text-white">
-              <i class="fa-solid fa-gear text-[11px]"></i><span>Admin</span>
-            </a>
-          </div>
+          <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-300 mb-2">
+            <i class="fa-regular fa-newspaper"></i> Bacheca Associativa
+          </span>
           <h1 class="font-serif text-4xl sm:text-5xl font-bold text-white">Comunicazioni</h1>
           <p class="text-amber-100/90 mt-2 text-lg font-serif italic">Avvisi ufficiali, verbali e novità dalla Pro Loco San Bassano APS.</p>
         </div>
@@ -2084,7 +2124,7 @@
       <div class="autumn-page-banner">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-300 mb-2">
-            <i class="fa-solid fa-landmark"></i> Pro Loco San Bassano APS
+            Pro Loco San Bassano APS
           </span>
           <h1 class="font-serif text-4xl sm:text-5xl font-bold text-white">La nostra storia</h1>
           <p class="text-amber-100/90 mt-2 text-lg font-serif italic">Trent'anni di impegno per il territorio e la comunità.</p>
@@ -2335,9 +2375,12 @@
 
       </div>
 
-      <div class="pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-amber-200/60 gap-4">
+      <div class="pt-8 flex flex-col items-center text-xs text-amber-200/60 gap-4">
         <p>© Pro Loco San Bassano APS - Tutti i diritti riservati.</p>
-        <p class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-amber-400"></i> Sito web ufficiale</p>
+        <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-5">
+          <p class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-amber-400"></i> Sito web ufficiale</p>
+          <a href="./admin.html" target="_blank" rel="noopener noreferrer" aria-label="Apri l'area riservata" class="inline-flex items-center gap-1.5 text-[11px] text-amber-100/45 hover:text-amber-300 transition"><i class="fa-solid fa-lock" aria-hidden="true"></i> Area riservata</a>
+        </div>
       </div>
     </div>
   </footer>
@@ -2467,6 +2510,35 @@
       });
     }
     caricaProssimiEventi();
+
+    async function caricaMeteoHome() {
+      const widget = document.getElementById('home-weather');
+      if (!widget) return;
+      const url = 'https://api.open-meteo.com/v1/forecast?latitude=45.246&longitude=9.808&current=temperature_2m,apparent_temperature,weather_code,is_day,wind_speed_10m&timezone=Europe%2FRome';
+      const condizioni = {
+        0: ['Sereno', 'fa-sun'], 1: ['Prevalentemente sereno', 'fa-cloud-sun'], 2: ['Parzialmente nuvoloso', 'fa-cloud-sun'], 3: ['Nuvoloso', 'fa-cloud'],
+        45: ['Nebbia', 'fa-smog'], 48: ['Nebbia con brina', 'fa-smog'], 51: ['Pioviggine leggera', 'fa-cloud-rain'], 53: ['Pioviggine', 'fa-cloud-rain'], 55: ['Pioviggine intensa', 'fa-cloud-showers-heavy'],
+        56: ['Pioviggine gelata', 'fa-cloud-rain'], 57: ['Pioviggine gelata', 'fa-cloud-rain'], 61: ['Pioggia leggera', 'fa-cloud-rain'], 63: ['Pioggia', 'fa-cloud-rain'], 65: ['Pioggia intensa', 'fa-cloud-showers-heavy'],
+        66: ['Pioggia gelata', 'fa-cloud-rain'], 67: ['Pioggia gelata', 'fa-cloud-rain'], 71: ['Neve leggera', 'fa-snowflake'], 73: ['Neve', 'fa-snowflake'], 75: ['Neve intensa', 'fa-snowflake'], 77: ['Neve', 'fa-snowflake'],
+        80: ['Rovesci leggeri', 'fa-cloud-rain'], 81: ['Rovesci', 'fa-cloud-showers-heavy'], 82: ['Rovesci intensi', 'fa-cloud-showers-heavy'], 85: ['Rovesci di neve', 'fa-snowflake'], 86: ['Rovesci di neve intensi', 'fa-snowflake'],
+        95: ['Temporale', 'fa-cloud-bolt'], 96: ['Temporale con grandine', 'fa-cloud-bolt'], 99: ['Temporale con grandine', 'fa-cloud-bolt']
+      };
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Risposta meteo non valida');
+        const data = await response.json();
+        const current = data.current;
+        const [descrizione, icona] = condizioni[current.weather_code] || ['Condizioni variabili', 'fa-cloud-sun'];
+        widget.querySelector('.home-weather__temp').textContent = `${Math.round(current.temperature_2m)}°`;
+        widget.querySelector('.home-weather__condition').textContent = descrizione;
+        const iconElement = widget.querySelector('.home-weather__icon');
+        iconElement.className = `home-weather__icon fa-solid ${icona}`;
+        widget.setAttribute('aria-label', `Meteo a San Bassano: ${descrizione}, ${Math.round(current.temperature_2m)} gradi`);
+      } catch (error) {
+        widget.querySelector('.home-weather__condition').textContent = 'Meteo non disponibile';
+      }
+    }
+    caricaMeteoHome();
 
     // Avvio caricamento comunicazioni al DOMContentLoaded
     document.addEventListener('DOMContentLoaded', () => {
