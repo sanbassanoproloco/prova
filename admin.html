@@ -425,7 +425,11 @@
           function button(label,action) {const b=document.createElement('button');b.type='button';b.className='border px-3 py-1.5 rounded-lg text-sm';b.textContent=label;b.onclick=async()=>{b.disabled=true;try{await action();}catch(err){activityMessage('Operazione non riuscita: '+err.message);}finally{b.disabled=false;}};actions.append(b);}
           button('Modifica',()=>{activityKeys.forEach(k=>document.getElementById('activity-'+k).value=e[k]||'');document.getElementById('activity-id').value=record.id;document.getElementById('activity-pubblicato').checked=!!e.pubblicato;document.getElementById('activity-file').value='';clearPreview();document.getElementById('activity-form-title').textContent='Modifica attività';document.getElementById('activities-admin').scrollIntoView({behavior:'smooth'});});
           button(e.pubblicato?'Nascondi':'Pubblica',async()=>{await updateDoc(record.ref,{pubblicato:!e.pubblicato,aggiornato:serverTimestamp()});await loadActivities();});
-          button('Elimina',async()=>{if(confirm('Eliminare definitivamente "'+e.titolo+'"?')){await deleteDoc(record.ref);await loadActivities();}});
+          button('Elimina',async()=>{
+            const codice=prompt('Per continuare, inserisci il codice di conferma ricevuto dal Direttivo:');
+            if(codice!=='DS03') { if(codice!==null) activityMessage('Codice non corretto: l’attività non è stata eliminata.'); return; }
+            if(confirm('Confermi l’eliminazione definitiva di “'+e.titolo+'”?')) { await deleteDoc(record.ref); activityMessage('Attività eliminata.'); await loadActivities(); }
+          });
           row.append(actions);list.append(row);
         });
         if(snapshot.empty)list.textContent='Nessuna attività inserita. Crea la prima scheda usando il modulo qui sopra.';
