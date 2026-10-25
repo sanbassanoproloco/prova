@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestione Comunicazioni — Pro Loco San Bassano APS</title>
+  <link rel="icon" type="image/png" href="logo.png">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50:'#faf4eb', 100:'#f3e8d8', 700:'#b94b1d', 800:'#b94b1d', 900:'#8f3510', 950:'#163029' },
+            accent: { 500:'#e9ad55', 600:'#b94b1d' }
+          },
+          fontFamily: {
+            sans: ['Manrope', 'sans-serif'],
+            heading: ['Fraunces', 'Georgia', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root { color-scheme: light; }
+    body {
+      color: #163029;
+      background-color: #faf4eb;
+      background-image: radial-gradient(at 12% 8%, rgba(233,173,85,.12), transparent 45%), radial-gradient(at 90% 45%, rgba(185,75,29,.06), transparent 48%);
+      font-family: 'Manrope', sans-serif;
+    }
+    input, textarea { background-color: #fffdf9; }
+    input:focus, textarea:focus { border-color: #b94b1d !important; box-shadow: 0 0 0 3px rgba(185,75,29,.13); }
+    button, a { transition: color .18s ease, background-color .18s ease, border-color .18s ease, transform .18s ease; }
+  </style>
+</head>
+<body class="font-sans min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-brand-950 text-white py-6 px-4 sm:px-8 border-b-4 border-amber-500">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <div>
+        <h1 class="font-heading text-2xl font-extrabold">Gestione Comunicazioni</h1>
+        <p class="text-amber-100/80 text-sm mt-1">Pro Loco San Bassano APS — Pannello riservato al Direttivo</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="index.html" class="text-sm px-4 py-2 rounded-full border border-amber-100/25 bg-white/10 hover:bg-white/20 transition">
+          <i class="fa-solid fa-arrow-left mr-1"></i> Torna al sito
+        </a>
+        <button id="btn-logout" class="hidden text-sm px-4 py-2 rounded-full border border-amber-100/25 bg-white/10 hover:bg-white/20 transition">
+          <i class="fa-solid fa-right-from-bracket mr-1"></i> Esci
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- LOGIN -->
+  <section id="login-view" class="max-w-md mx-auto mt-16 px-4">
+    <div class="bg-[#fffdf9] p-8 rounded-3xl border border-[#eadbc8] shadow-xl shadow-[#5a3218]/10">
+      <h2 class="font-heading text-2xl font-bold text-[#163029] mb-1">Accedi</h2>
+      <p class="text-sm text-[#6e5a49] mb-6">Usa le credenziali del Direttivo per accedere al pannello.</p>
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold text-[#432818] mb-1">Email</label>
+          <input type="email" id="login-email" required class="w-full px-4 py-2.5 rounded-xl border border-[#d9c7b0] focus:outline-none focus:ring-2 focus:ring-brand-700">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-[#432818] mb-1">Password</label>
+          <input type="password" id="login-password" required class="w-full px-4 py-2.5 rounded-xl border border-[#d9c7b0] focus:outline-none focus:ring-2 focus:ring-brand-700">
+        </div>
+        <p id="login-error" class="hidden text-sm text-red-600"></p>
+        <button type="submit" class="w-full bg-brand-800 hover:bg-brand-900 text-white font-bold py-3 rounded-xl shadow-sm transition">
+          Accedi
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- PANNELLO (visibile dopo login) -->
+  <main id="admin-view" class="hidden max-w-5xl mx-auto px-4 sm:px-8 py-10 space-y-10">
+
+    <!-- Pannello Istruzioni -->
+    <section class="bg-[#f7efe4] border border-[#eadbc8] rounded-3xl p-6 sm:p-8 text-[#432818] shadow-sm">
+      <div class="flex items-start gap-4">
+        <div class="p-3 bg-brand-800 text-white rounded-xl shrink-0 mt-1">
+          <i class="fa-solid fa-circle-info text-xl"></i>
+        </div>
+        <div class="space-y-2">
+          <h2 class="font-heading text-xl font-bold text-brand-900">Istruzioni per l'utilizzo del pannello</h2>
+          <p class="text-sm text-[#5a4634] leading-relaxed">
+            Benvenuto nel sistema di gestione delle comunicazioni via sito Web della Pro Loco San Bassano APS. Questo pannello deve essere utilizzato esclusivamente per la pubblicazione di <strong>comunicazioni di tipo ordinario e gestionale</strong>, le quali seguono un formato standardizzato all'interno del sito.
+          </p>
+          <ul class="text-sm space-y-1.5 text-[#5a4634] pt-1 list-disc list-inside">
+            <li><strong>Inserimento avvisi:</strong> Compila i campi <em>Titolo</em>, <em>Data</em> e <em>Testo</em>. Puoi scegliere se pubblicare l'aggiornamento subito o salvarlo come bozza non visibile al pubblico.</li>
+            <li><strong>Gestione rapida:</strong> Usa i pulsanti accanto a ciascun elemento nell'elenco per modificare i testi, attivare/disattivare la visibilità o eliminare la comunicazione.</li>
+            <li><strong>Richieste speciali:</strong> Per l'inserimento di elementi straordinari come pop-up, banner dedicati o comunicazioni di particolare rilievo ed evidenza, è necessario rivolgersi a <strong>Davide</strong>.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Form nuova/modifica comunicazione -->
+    <section class="bg-[#fffdf9] p-6 sm:p-8 rounded-3xl border border-[#eadbc8] shadow-sm">
+      <h2 id="form-title" class="font-heading text-xl font-bold text-[#163029] mb-5">
+        <i class="fa-solid fa-bullhorn text-accent-600 mr-2"></i> Nuova comunicazione
+      </h2>
+      <form id="comm-form" class="space-y-4">
+        <input type="hidden" id="comm-id" value="">
+        <div>
+          <label class="block text-sm font-semibold text-[#432818] mb-1">Titolo</label>
+          <input type="text" id="comm-titolo" required maxlength="150" class="w-full px-4 py-2.5 rounded-xl border border-[#d9c7b0] focus:outline-none focus:ring-2 focus:ring-brand-700" placeholder="Es. Convocazione assemblea ordinaria">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-[#432818] mb-1">Data</label>
+          <input type="date" id="comm-data" required class="w-full sm:w-64 px-4 py-2.5 rounded-xl border border-[#d9c7b0] focus:outline-none focus:ring-2 focus:ring-brand-700">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-[#432818] mb-1">Testo</label>
+          <textarea id="comm-testo" required rows="6" class="w-full px-4 py-2.5 rounded-xl border border-[#d9c7b0] focus:outline-none focus:ring-2 focus:ring-brand-700" placeholder="Scrivi qui il testo della comunicazione..."></textarea>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="comm-pubblicato" checked class="w-4 h-4 rounded border-[#d9c7b0] text-brand-700 focus:ring-brand-700">
+          <label for="comm-pubblicato" class="text-sm text-[#432818]">Pubblica subito sul sito</label>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="submit" id="comm-submit-btn" class="bg-brand-800 hover:bg-brand-900 text-white font-semibold px-6 py-2.5 rounded-xl transition">
+            <i class="fa-solid fa-check mr-1"></i> Salva
+          </button>
+          <button type="button" id="comm-cancel-btn" class="hidden text-[#6e5a49] hover:text-[#163029] font-semibold px-6 py-2.5 rounded-xl border border-[#d9c7b0] transition">
+            Annulla modifica
+          </button>
+        </div>
+        <p id="comm-feedback" class="hidden text-sm font-medium"></p>
+      </form>
+    </section>
+
+    <!-- Elenco comunicazioni -->
+    <section>
+      <h2 class="font-heading text-xl font-bold text-[#163029] mb-5">
+        <i class="fa-solid fa-list text-accent-600 mr-2"></i> Comunicazioni esistenti
+      </h2>
+      <div id="comm-list" class="space-y-4">
+        <p class="text-[#6e5a49] text-sm">Caricamento...</p>
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
+      getDocs, orderBy, query, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { firebaseConfig } from "./firebase-config.js";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const loginView = document.getElementById('login-view');
+    const adminView = document.getElementById('admin-view');
+    const btnLogout = document.getElementById('btn-logout');
+
+    // ---------- LOGIN ----------
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errorEl = document.getElementById('login-error');
+      errorEl.classList.add('hidden');
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (err) {
+        console.error('Errore login Firebase:', err);
+        errorEl.textContent = 'Email o password errati.';
+        errorEl.classList.remove('hidden');
+      }
+    });
+
+    btnLogout.addEventListener('click', () => signOut(auth));
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginView.classList.add('hidden');
+        adminView.classList.remove('hidden');
+        btnLogout.classList.remove('hidden');
+        caricaElenco();
+      } else {
+        loginView.classList.remove('hidden');
+        adminView.classList.add('hidden');
+        btnLogout.classList.add('hidden');
+      }
+    });
+
+    // ---------- FORM (crea / modifica) ----------
+    const form = document.getElementById('comm-form');
+    const feedback = document.getElementById('comm-feedback');
+    const cancelBtn = document.getElementById('comm-cancel-btn');
+    const formTitle = document.getElementById('form-title');
+    const submitBtn = document.getElementById('comm-submit-btn');
+
+    function resetForm() {
+      form.reset();
+      document.getElementById('comm-id').value = '';
+      document.getElementById('comm-pubblicato').checked = true;
+      formTitle.innerHTML = '<i class="fa-solid fa-bullhorn text-accent-600 mr-2"></i> Nuova comunicazione';
+      submitBtn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Salva';
+      cancelBtn.classList.add('hidden');
+    }
+
+    cancelBtn.addEventListener('click', resetForm);
+
+    function mostraFeedback(msg, ok = true) {
+      feedback.textContent = msg;
+      feedback.className = 'text-sm font-medium ' + (ok ? 'text-brand-700' : 'text-red-600');
+      feedback.classList.remove('hidden');
+      setTimeout(() => feedback.classList.add('hidden'), 3500);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('comm-id').value;
+      const payload = {
+        titolo: document.getElementById('comm-titolo').value.trim(),
+        data: document.getElementById('comm-data').value,
+        testo: document.getElementById('comm-testo').value.trim(),
+        pubblicato: document.getElementById('comm-pubblicato').checked,
+        aggiornato: serverTimestamp()
+      };
+
+      try {
+        if (id) {
+          await updateDoc(doc(db, 'comunicazioni', id), payload);
+          mostraFeedback('Comunicazione aggiornata.');
+        } else {
+          payload.creato = serverTimestamp();
+          await addDoc(collection(db, 'comunicazioni'), payload);
+          mostraFeedback('Comunicazione pubblicata.');
+        }
+        resetForm();
+        caricaElenco();
+      } catch (err) {
+        console.error(err);
+        mostraFeedback('Errore durante il salvataggio.', false);
+      }
+    });
+
+    // ---------- ELENCO ----------
+    async function caricaElenco(isRetry = false) {
+      const listEl = document.getElementById('comm-list');
+      if (!isRetry) {
+        listEl.innerHTML = '<p class="text-[#6e5a49] text-sm">Caricamento...</p>';
+      }
+      try {
+        const q = query(collection(db, 'comunicazioni'), orderBy('data', 'desc'));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+          listEl.innerHTML = '<p class="text-[#6e5a49] text-sm">Nessuna comunicazione inserita.</p>';
+          return;
+        }
+
+        listEl.innerHTML = '';
+        snap.forEach(docSnap => {
+          const c = docSnap.data();
+          const id = docSnap.id;
+          const card = document.createElement('div');
+          card.className = 'bg-[#fffdf9] p-5 rounded-2xl border border-[#eadbc8] shadow-sm flex flex-col sm:flex-row sm:items-start justify-between gap-4';
+          card.innerHTML = `
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-semibold uppercase tracking-wider ${c.pubblicato ? 'text-brand-700' : 'text-[#9b8875]'}">
+                  ${c.pubblicato ? '<i class="fa-solid fa-circle-check mr-1"></i>Pubblicata' : '<i class="fa-solid fa-eye-slash mr-1"></i>Bozza (non visibile sul sito)'}
+                </span>
+                <span class="text-xs text-[#9b8875]">${c.data || ''}</span>
+              </div>
+              <h3 class="font-heading font-bold text-[#163029]">${c.titolo || ''}</h3>
+              <p class="text-sm text-[#6e5a49] mt-1 line-clamp-2">${(c.testo || '').slice(0, 160)}${(c.testo || '').length > 160 ? '…' : ''}</p>
+            </div>
+            <div class="flex sm:flex-col gap-2 shrink-0">
+              <button class="btn-edit text-sm px-3 py-1.5 rounded-lg border border-[#d9c7b0] text-[#432818] hover:bg-[#faf4eb] transition"><i class="fa-solid fa-pen mr-1"></i>Modifica</button>
+              <button class="btn-toggle text-sm px-3 py-1.5 rounded-lg border border-[#d9c7b0] text-[#432818] hover:bg-[#faf4eb] transition">
+                <i class="fa-solid ${c.pubblicato ? 'fa-eye-slash' : 'fa-eye'} mr-1"></i>${c.pubblicato ? 'Nascondi' : 'Pubblica'}
+              </button>
+              <button class="btn-delete text-sm px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition"><i class="fa-solid fa-trash mr-1"></i>Elimina</button>
+            </div>`;
+
+          card.querySelector('.btn-edit').addEventListener('click', () => {
+            document.getElementById('comm-id').value = id;
+            document.getElementById('comm-titolo').value = c.titolo || '';
+            document.getElementById('comm-data').value = c.data || '';
+            document.getElementById('comm-testo').value = c.testo || '';
+            document.getElementById('comm-pubblicato').checked = !!c.pubblicato;
+            formTitle.innerHTML = '<i class="fa-solid fa-pen text-accent-600 mr-2"></i> Modifica comunicazione';
+            submitBtn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Salva modifiche';
+            cancelBtn.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+
+          card.querySelector('.btn-toggle').addEventListener('click', async () => {
+            try {
+              await updateDoc(doc(db, 'comunicazioni', id), { pubblicato: !c.pubblicato, aggiornato: serverTimestamp() });
+              caricaElenco();
+            } catch (err) {
+              console.error(err);
+              alert('Errore durante l\'operazione.');
+            }
+          });
+
+          card.querySelector('.btn-delete').addEventListener('click', async () => {
+            if (!confirm(`Eliminare definitivamente "${c.titolo}"?`)) return;
+            try {
+              await deleteDoc(doc(db, 'comunicazioni', id));
+              caricaElenco();
+            } catch (err) {
+              console.error(err);
+              alert('Errore durante l\'eliminazione.');
+            }
+          });
+
+          listEl.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Errore caricamento elenco:', err);
+        if (!isRetry) {
+          setTimeout(() => caricaElenco(true), 700);
+          return;
+        }
+        listEl.innerHTML = '<p class="text-red-600 text-sm">Errore nel caricamento delle comunicazioni.</p>';
+      }
+    }
+  </script>
+</body>
+</html>
