@@ -188,7 +188,7 @@
 <form id="activity-form"><input id="activity-id" type="hidden"><input id="activity-pagina" type="hidden">
 <fieldset><legend>Le informazioni principali</legend><div class="field"><label for="activity-titolo">Titolo dell’attività</label><input id="activity-titolo" type="text" required maxlength="150" placeholder="Es. Festa d’autunno"></div><div class="field"><label for="activity-descrizione">Descrizione</label><textarea id="activity-descrizione" rows="5" placeholder="Racconta il programma e le informazioni utili…"></textarea></div></fieldset>
 <fieldset><legend>Quando si svolge</legend><p class="field-help">La home mostra l’evento fino all’ultimo giorno compreso. Lascia le date vuote se sono ancora da definire.</p><div class="field-pair"><div class="field"><label for="activity-dataInizio">Data inizio</label><input id="activity-dataInizio" type="date" ></div><div class="field"><label for="activity-dataFine">Data fine · facoltativa</label><input id="activity-dataFine" type="date" ></div></div><div class="field"><label for="activity-dataLabel">Testo della data · facoltativo</label><input id="activity-dataLabel" type="text" placeholder="Es. 28 ottobre 2026, ore 20:30"></div><p class="field-help">Se lasci questo campo vuoto, la data viene formattata automaticamente.</p></fieldset>
-<fieldset><legend>La locandina</legend><div class="upload-zone"><i class="fa-regular fa-image" aria-hidden="true"></i><div><label for="activity-file">Scegli un’immagine dal computer</label><p>JPEG, PNG o WebP · massimo 5 MB</p><input id="activity-file" type="file" accept="image/jpeg,image/png,image/webp"></div></div><div class="field"><label for="activity-immagine">Oppure usa un’immagine già online</label><input id="activity-immagine" type="text" placeholder="https://… oppure img/nome-immagine.jpg"></div><img id="activity-preview" alt="Anteprima della locandina" hidden></fieldset>
+<fieldset><legend>La locandina</legend><p class="field-help">Inserisci il collegamento a un’immagine già online oppure il percorso di un’immagine presente nei file del sito.</p><div class="field"><label for="activity-immagine">Link o percorso della locandina</label><input id="activity-immagine" type="text" placeholder="https://… oppure img/nome-immagine.jpg" autocomplete="url"></div><img id="activity-preview" alt="Anteprima della locandina" hidden></fieldset>
 <div class="publish-option"><input id="activity-pubblicato" type="checkbox" checked><label for="activity-pubblicato"><strong>Pubblica sul sito</strong><span>Disattiva per conservare la scheda come bozza.</span></label></div>
 <div class="form-actions"><button id="activity-save" type="submit" class="primary-action"><i class="fa-solid fa-check" aria-hidden="true"></i> Salva attività</button><button type="button" id="activity-cancel" class="secondary-action">Annulla modifica</button><p id="activity-feedback" role="status" aria-live="polite"></p></div></form></section>
 <section class="archive-section"><div class="sheet-heading"><span class="section-number">02</span><div><h2>Le tue attività</h2><p>Modifica le schede o scegli quali rendere visibili.</p></div></div><div id="activity-list" class="space-y-4"></div></section></div>
@@ -203,7 +203,6 @@
       getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
       getDocs, orderBy, query, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
     import { firebaseConfig } from "./firebase-config.js";
 
     const app = initializeApp(firebaseConfig);
@@ -384,7 +383,6 @@
       }
     }
 
-    const storage = getStorage(app);
     const activityForm = document.getElementById('activity-form');
     const activityFeedback = document.getElementById('activity-feedback');
     const activitySave = document.getElementById('activity-save');
@@ -401,12 +399,6 @@
       if(!payload.dataFine) payload.dataFine=payload.dataInizio;
       if(payload.immagine && !/^(https?:\/\/|img\/)/i.test(payload.immagine)) {activityMessage('Usa un URL https oppure un percorso che inizi con img/.');activitySave.disabled=false;return;}
       try {
-        const file=document.getElementById('activity-file').files[0];
-        if(file) {
-          if(!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size>5*1024*1024) throw new Error('Usa una locandina JPEG, PNG o WebP di massimo 5 MB.');
-          const location=ref(storage,'attivita/'+crypto.randomUUID()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_'));
-          await uploadBytes(location,file,{contentType:file.type}); payload.immagine=await getDownloadURL(location);
-        }
         payload.aggiornato=serverTimestamp();
         if(id) await updateDoc(doc(db,'attivita',id),payload); else await addDoc(collection(db,'attivita'),{...payload,creato:serverTimestamp()});
         resetActivity(); activityMessage('Attività salvata. Il sito si aggiorna automaticamente.'); await loadActivities();
@@ -423,7 +415,7 @@
           const detail=document.createElement('p'); detail.className='text-sm'; detail.textContent=(e.dataLabel || e.dataInizio || 'Data da definire')+' · '+(e.pubblicato?'Pubblicata':'Bozza'); row.append(title,detail);
           const actions=document.createElement('div');actions.className='flex flex-wrap gap-3';
           function button(label,action) {const b=document.createElement('button');b.type='button';b.className='border px-3 py-1.5 rounded-lg text-sm';b.textContent=label;b.onclick=async()=>{b.disabled=true;try{await action();}catch(err){activityMessage('Operazione non riuscita: '+err.message);}finally{b.disabled=false;}};actions.append(b);}
-          button('Modifica',()=>{activityKeys.forEach(k=>document.getElementById('activity-'+k).value=e[k]||'');document.getElementById('activity-id').value=record.id;document.getElementById('activity-pubblicato').checked=!!e.pubblicato;document.getElementById('activity-file').value='';clearPreview();document.getElementById('activity-form-title').textContent='Modifica attività';document.getElementById('activities-admin').scrollIntoView({behavior:'smooth'});});
+          button('Modifica',()=>{activityKeys.forEach(k=>document.getElementById('activity-'+k).value=e[k]||'');document.getElementById('activity-id').value=record.id;document.getElementById('activity-pubblicato').checked=!!e.pubblicato;updateImagePreview();document.getElementById('activity-form-title').textContent='Modifica attività';document.getElementById('activities-admin').scrollIntoView({behavior:'smooth'});});
           button(e.pubblicato?'Nascondi':'Pubblica',async()=>{await updateDoc(record.ref,{pubblicato:!e.pubblicato,aggiornato:serverTimestamp()});await loadActivities();});
           button('Elimina',async()=>{
             const codice=prompt('Per continuare, inserisci il codice di conferma ricevuto dal Direttivo:');
@@ -442,9 +434,9 @@
       editorTabs.forEach(t=>{const active=t===tab;t.setAttribute('aria-selected',String(active));t.tabIndex=active?0:-1;document.getElementById(t.getAttribute('aria-controls')).hidden=!active;});
     }
     editorTabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectEditor(tab));tab.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?editorTabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+editorTabs.length)%editorTabs.length;selectEditor(editorTabs[next]);editorTabs[next].focus();});});
-    let previewObjectUrl;
-    function clearPreview() {if(previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);previewObjectUrl=null;const image=document.getElementById('activity-preview');image.hidden=true;image.removeAttribute('src');}
-    document.getElementById('activity-file').addEventListener('change',event=>{clearPreview();const file=event.target.files[0];if(file&&['image/jpeg','image/png','image/webp'].includes(file.type)){previewObjectUrl=URL.createObjectURL(file);const image=document.getElementById('activity-preview');image.src=previewObjectUrl;image.hidden=false;}});
+    function clearPreview() {const image=document.getElementById('activity-preview');image.hidden=true;image.removeAttribute('src');}
+    function updateImagePreview() {const source=document.getElementById('activity-immagine').value.trim();const image=document.getElementById('activity-preview');if(/^(https?:\/\/|img\/)/i.test(source)){image.src=source;image.hidden=false;}else clearPreview();}
+    document.getElementById('activity-immagine').addEventListener('input',updateImagePreview);
     activityForm.addEventListener('reset',clearPreview);
   </script>
 </body>
