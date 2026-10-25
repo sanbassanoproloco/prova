@@ -72,7 +72,7 @@
   <!-- Firebase (per le Comunicazioni gestite dal pannello admin.html) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, query, where, orderBy, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { firebaseConfig } from "./firebase-config.js";
 
     const app = initializeApp(firebaseConfig);
@@ -175,6 +175,31 @@
         if (fullContainer) fullContainer.innerHTML = errHtml;
       }
     }
+
+
+    // Attività pubblicate: una sola fonte per archivio e home.
+    onSnapshot(query(collection(db, 'attivita'), where('pubblicato', '==', true)), snapshot => {
+      const grid = document.getElementById('activities-grid');
+      const eventi = snapshot.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => (b.dataInizio || '').localeCompare(a.dataInizio || ''));
+      grid.replaceChildren();
+      eventi.forEach(e => {
+        const card = document.createElement('div');
+        card.className = 'autumn-card rounded-2xl overflow-hidden flex flex-col';
+        card.dataset.date = e.dataFine || e.dataInizio;
+        const label = e.dataLabel || (e.dataFine && e.dataFine !== e.dataInizio ? formatDataIt(e.dataInizio) + ' – ' + formatDataIt(e.dataFine) : formatDataIt(e.dataInizio));
+        card.innerHTML = `<div class="p-6 space-y-3 flex-grow"><div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-autumn-rust"><i class="fa-regular fa-calendar"></i> ${escapeHtml(label)}</div><h3 class="font-serif text-2xl font-bold text-autumn-forest">${escapeHtml(e.titolo)}</h3><p class="text-autumn-muted text-sm leading-relaxed whitespace-pre-line">${escapeHtml(e.descrizione)}</p></div>`;
+        if (e.immagine && /^(https?:\/\/|img\/)/i.test(e.immagine)) {
+          const image = document.createElement('img'); image.src=e.immagine; image.alt=e.titolo; image.loading='lazy'; image.className='w-full h-56 object-contain autumn-card-img-wrap p-2';
+          card.prepend(image);
+          const zoom=document.createElement('button'); zoom.type='button'; zoom.className='mx-6 mt-4 text-sm font-bold text-autumn-rust self-start'; zoom.textContent='Ingrandisci locandina';
+          zoom.addEventListener('click',()=>{ const modal=document.getElementById('activity-image-modal'); const large=document.getElementById('activity-image-large'); large.src=image.src; large.alt=image.alt; modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.style.overflow='hidden'; document.getElementById('activity-image-close').focus(); }); image.after(zoom);
+        }
+        if(e.pagina === 'serestate') {const b=document.createElement('button'); b.type='button'; b.className='m-6 text-autumn-rust font-bold'; b.textContent='Vai alla sezione dedicata'; b.onclick=()=>navigateTo('serestate');card.append(b);}
+        grid.append(card);
+      });
+      if(!eventi.length) grid.innerHTML='<p class="text-autumn-muted">Al momento non ci sono attività pubblicate.</p>';
+      window.caricaProssimiEventi();
+    }, error => {console.error('Errore attività:',error); const grid=document.getElementById('activities-grid'); const notice=document.createElement('p'); notice.className='col-span-full text-autumn-muted'; notice.textContent='Aggiornamento attività non disponibile. È visualizzato l’archivio del sito.'; grid.prepend(notice);});
 
     window.caricaComunicazioni = caricaComunicazioni;
   </script>
@@ -1548,7 +1573,7 @@
       </div>
 
       <div class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div id="activities-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
           <div class="autumn-card rounded-2xl overflow-hidden flex flex-col">
             <img src="img/attivita/la_spada_perduta.jpeg" alt="Presentazione del libro &quot;La spada perduta&quot;" class="w-full h-56 object-contain autumn-card-img-wrap p-2">
@@ -2370,15 +2395,15 @@
 
       const eventi = cards.map(card => {
         const dateLabel = card.querySelector('.fa-calendar')?.parentElement?.textContent.trim() || '';
-        const anno = Number(dateLabel.match(/\b20\d{2}\b/)?.[0]);
+        const anno = Number(dateLabel.match(/\b20\d{2}\b/)?.[0] || card.dataset.date?.slice(0,4));
         if (!anno) return null;
 
         const patternData = /(\d{1,2})(?:\s*(?:-|al)\s*(\d{1,2}))?\s+(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)/gi;
         const dateTrovate = Array.from(dateLabel.matchAll(patternData));
-        if (!dateTrovate.length) return null;
+        if (!dateTrovate.length && !card.dataset.date) return null;
 
         const dateEvento = dateTrovate.map(match => new Date(anno, mesi[match[3].toLowerCase()], Number(match[2] || match[1])));
-        const fineEvento = dateEvento.reduce((ultima, data) => data > ultima ? data : ultima);
+        const fineEvento = card.dataset.date ? new Date(card.dataset.date + "T00:00:00") : dateEvento.reduce((ultima, data) => data > ultima ? data : ultima);
         return {
           card,
           data: fineEvento,
