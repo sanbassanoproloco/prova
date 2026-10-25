@@ -130,7 +130,7 @@
             const c = docSnap.data();
             htmlHome += `
               <article class="news-card cursor-pointer" onclick="navigateTo('comunicazioni')">
-                <div class="news-card__thumb"><i class="fa-solid fa-wheat-awn"></i></div>
+                <div class="news-card__thumb"><i class="fa-solid fa-bullhorn" aria-hidden="true"></i></div>
                 <div class="news-card__copy">
                   <p class="news-date"><i class="fa-regular fa-calendar mr-1"></i>${escapeHtml(formatDataIt(c.data))}</p>
                   <h3>${escapeHtml(c.titolo)}</h3>
@@ -504,37 +504,38 @@
     .home-upcoming-list { display: grid; gap: 12px; }
     .upcoming-event-card {
       display: grid;
-      grid-template-columns: 92px minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 14px;
-      padding: 12px;
-      border: 1px solid #efe3d2;
-      border-radius: 18px;
-      background: var(--autumn-card);
-      box-shadow: 0 4px 14px rgba(99,74,43,.05);
+      grid-template-columns: 132px minmax(0, 1fr) auto;
+      align-items: stretch;
+      gap: 18px;
+      padding: 14px;
+      border: 1px solid #ead8c1;
+      border-left: 4px solid var(--autumn-rust);
+      border-radius: 8px 20px 20px 8px;
+      background: linear-gradient(110deg, #fffaf3, #fffdf9 55%);
+      box-shadow: 0 5px 18px rgba(99,74,43,.06);
       transition: border-color .22s ease, box-shadow .22s ease;
     }
-    .upcoming-event-card:hover { border-color: #deb887; box-shadow: 0 10px 24px rgba(105,58,22,.10); }
+    .upcoming-event-card:hover { border-color: #deb887; box-shadow: 0 9px 24px rgba(105,58,22,.10); }
     .upcoming-event-card__image {
-      width: 92px;
-      height: 82px;
+      width: 132px;
+      min-height: 104px;
       display: grid;
       place-items: center;
       overflow: hidden;
       border-radius: 12px;
-      background: linear-gradient(135deg,#e09b3e 0%,#8a3414 100%);
+      background: linear-gradient(135deg,#e9c69b 0%,#b65b31 100%);
       color: #fff4dc;
       font-size: 1.5rem;
     }
     .upcoming-event-card__image img { width: 100%; height: 100%; object-fit: cover; }
-    .upcoming-event-card__date { margin: 0 0 4px; color: var(--autumn-rust); font-size: .68rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
-    .upcoming-event-card__title { margin: 0; color: var(--autumn-forest); font: 700 1.05rem/1.2 'Fraunces',Georgia,serif; }
-    .upcoming-event-card__description { margin: 5px 0 0; color: #6e5a49; font-size: .78rem; line-height: 1.4; }
+    .upcoming-event-card__date { display: inline-block; margin: 0 0 8px; padding: 4px 9px; border-radius: 999px; background: #f3e5d3; color: var(--autumn-rust); font-size: .68rem; font-weight: 800; letter-spacing: .04em; }
+    .upcoming-event-card__title { margin: 0; color: var(--autumn-forest); font: 700 1.2rem/1.25 'Fraunces',Georgia,serif; }
+    .upcoming-event-card__description { margin: 7px 0 0; color: #6e5a49; font-size: .84rem; line-height: 1.5; }
     .upcoming-event-card__link { display:grid; place-items:center; width:34px; height:34px; border-radius:50%; background:#f8ecde; color:var(--autumn-rust); }
     .upcoming-event-card__link:hover { background:var(--autumn-rust); color:white; }
     @media (max-width: 520px) {
-      .upcoming-event-card { grid-template-columns: 68px minmax(0,1fr) 30px; gap:10px; padding:10px; }
-      .upcoming-event-card__image { width:68px; height:68px; }
+      .upcoming-event-card { grid-template-columns: 76px minmax(0,1fr) 30px; gap:10px; padding:10px; }
+      .upcoming-event-card__image { width:76px; min-height:76px; }
       .upcoming-event-card__title { font-size:.96rem; }
       .upcoming-event-card__description { font-size:.74rem; }
     }
@@ -1549,16 +1550,6 @@
       <div class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-          <div class="autumn-card rounded-2xl overflow-hidden flex flex-col">
-            <img src="img/festa-country.jpg" alt="Prova attività" class="w-full h-56 object-contain autumn-card-img-wrap p-2" loading="lazy">
-            <div class="p-6 space-y-3 flex-grow">
-              <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-autumn-rust">
-                <i class="fa-regular fa-calendar"></i> 28 ottobre 2026
-              </div>
-              <h3 class="font-serif text-2xl font-bold text-autumn-forest">Prova attività</h3>
-            </div>
-          </div>
-          
           <div class="autumn-card rounded-2xl overflow-hidden flex flex-col">
             <img src="img/attivita/la_spada_perduta.jpeg" alt="Presentazione del libro &quot;La spada perduta&quot;" class="w-full h-56 object-contain autumn-card-img-wrap p-2">
             <div class="p-6 space-y-3 flex-grow">
