@@ -426,6 +426,35 @@
       background: linear-gradient(135deg, #d95f2b 0%, #b44316 100%);
       transform: translateY(-2px);
     }
+    .direttivo-story-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 10px 10px 24px;
+      border: 1px solid #a54520;
+      border-radius: 999px;
+      background: #fffaf3;
+      color: #7d351d;
+      font-weight: 800;
+      box-shadow: 0 6px 18px rgba(72, 41, 16, .1);
+      transition: background .2s ease, box-shadow .2s ease, transform .2s ease;
+    }
+    .direttivo-story-link:hover {
+      background: #f8ecdc;
+      box-shadow: 0 9px 22px rgba(72, 41, 16, .16);
+      transform: translateY(-2px);
+    }
+    .direttivo-story-link:focus-visible { outline: 3px solid #c85220; outline-offset: 4px; }
+    .direttivo-story-link i {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #a54520;
+      color: #fff;
+      font-size: .85rem;
+    }
     .button-outline {
       border: 1.5px solid #f2c369;
       color: #fff9ef;
@@ -1492,7 +1521,7 @@
           <div class="section-heading">
             <div>
               <h2>Comunicazioni</h2>
-              <p>Le ultime notizie dalla Pro Loco</p>
+              <p>Le ultime notizie dalla Pro Loco di San Bassano</p>
             </div>
             <button onclick="navigateTo('comunicazioni')" class="text-link">
               Tutte le comunicazioni <i class="fa-solid fa-arrow-right"></i>
@@ -1510,7 +1539,7 @@
           <div class="section-heading">
             <div>
               <h2>Prossimi eventi</h2>
-              <p>Appuntamenti ancora da vivere</p>
+              <p>Scopri gli eventi in programma</p>
             </div>
             <button onclick="navigateTo('attivita')" class="text-link">
               Tutti gli eventi <i class="fa-solid fa-arrow-right"></i>
@@ -2176,8 +2205,8 @@
           <!-- Presidente -->
           <div class="autumn-card p-7 rounded-3xl border-2 border-amber-500/80 text-center relative overflow-hidden">
             <div class="absolute top-0 right-0 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-extrabold px-3.5 py-1 rounded-bl-xl uppercase tracking-wider">Presidenza</div>
-            <div class="w-20 h-20 bg-autumn-forest text-amber-400 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-md rotate-3">
-              <i class="fa-solid fa-user-tie -rotate-3"></i>
+            <div class="w-20 h-20 bg-autumn-forest text-amber-400 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-md">
+              <i class="fa-solid fa-user-tie"></i>
             </div>
             <h3 class="font-serif text-2xl font-bold text-autumn-forest">Lenci Gabriele</h3>
             <p class="text-xs font-extrabold text-autumn-rust uppercase tracking-widest mt-1.5">Presidente</p>
@@ -2267,6 +2296,12 @@
             </div>
           </div>
 
+        </div>
+
+        <div class="mt-10 flex justify-center">
+          <button type="button" onclick="navigateTo('storia')" class="direttivo-story-link">
+            La nostra Pro Loco <i class="fa-solid fa-arrow-right"></i>
+          </button>
         </div>
 
       </div>
