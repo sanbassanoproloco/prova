@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pro Loco San Bassano APS - Sito Ufficiale</title>
+  <meta name="description" content="Scopri eventi, iniziative e tradizioni della Pro Loco San Bassano APS, al servizio della comunità e del territorio.">
+  <link rel="canonical" href="https://prolocosanbassano.it/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="it_IT">
+  <meta property="og:title" content="Pro Loco San Bassano APS">
+  <meta property="og:description" content="Eventi, iniziative e tradizioni per la comunità di San Bassano.">
+  <meta property="og:url" content="https://prolocosanbassano.it/">
+  <meta property="og:image" content="https://prolocosanbassano.it/logo.png">
+  <meta name="twitter:card" content="summary">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="logo.png">
@@ -198,6 +207,7 @@
         grid.append(card);
       });
       if(!eventi.length) grid.innerHTML='<p class="text-autumn-muted">Al momento non ci sono attività pubblicate.</p>';
+      window.organizzaAttivita();
       window.caricaProssimiEventi();
     }, error => {console.error('Errore attività:',error); const grid=document.getElementById('activities-grid'); const notice=document.createElement('p'); notice.className='col-span-full text-autumn-muted'; notice.textContent='Aggiornamento attività non disponibile. È visualizzato l’archivio del sito.'; grid.prepend(notice);});
 
@@ -205,6 +215,7 @@
   </script>
 
   <style>
+    :where(a, button, select):focus-visible { outline: 3px solid #c85220; outline-offset: 3px; }
     :root {
       --autumn-ink: #163029;
       --autumn-forest: #122620;
@@ -1456,7 +1467,7 @@
 
         <!-- Mobile Menu Toggle Button -->
         <div class="md:hidden flex items-center">
-          <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl text-autumn-forest hover:bg-amber-900/10 focus:outline-none" aria-label="Apri menu">
+          <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2.5 rounded-xl text-autumn-forest hover:bg-amber-900/10" aria-label="Apri menu" aria-expanded="false" aria-controls="mobile-menu">
             <i class="fa-solid fa-bars text-2xl"></i>
           </button>
         </div>
@@ -2439,6 +2450,11 @@
       const targetPage = document.getElementById('page-' + pageId);
       if (targetPage) {
         targetPage.classList.add('active');
+        const heading = targetPage.querySelector('h1');
+        if (heading) {
+          heading.setAttribute('tabindex', '-1');
+          heading.focus({ preventScroll: true });
+        }
       }
 
       document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -2450,6 +2466,8 @@
       });
 
       document.getElementById('mobile-menu').classList.add('hidden');
+      document.getElementById('mobile-menu-btn').setAttribute('aria-expanded', 'false');
+      document.getElementById('mobile-menu-btn').setAttribute('aria-label', 'Apri menu');
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       if (pageId === 'serestate') {
@@ -2460,6 +2478,79 @@
         window.caricaComunicazioni();
       }
     }
+
+    function dataAttivita(card) {
+      if (card.dataset.date) {
+        const data = new Date(card.dataset.date + 'T00:00:00');
+        if (!Number.isNaN(data.getTime())) return data;
+      }
+      const testo = card.querySelector('.fa-calendar')?.parentElement?.textContent || '';
+      const anno = testo.match(/\b20\d{2}\b/)?.[0];
+      const mesi = { gennaio: 0, febbraio: 1, marzo: 2, aprile: 3, maggio: 4, giugno: 5, luglio: 6, agosto: 7, settembre: 8, ottobre: 9, novembre: 10, dicembre: 11 };
+      const date = Array.from(testo.matchAll(/(\d{1,2})(?:\s*(?:-|al)\s*(\d{1,2}))?\s+(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)/gi));
+      if (!anno || !date.length) return null;
+      return date.map(m => new Date(Number(anno), mesi[m[3].toLowerCase()], Number(m[2] || m[1]))).reduce((a, b) => a > b ? a : b);
+    }
+
+    function organizzaAttivita() {
+      const grid = document.getElementById('activities-grid');
+      const cards = Array.from(grid.querySelectorAll(':scope > .autumn-card'));
+      grid.querySelectorAll('[data-activity-control]').forEach(el => el.remove());
+      const oggi = new Date();
+      oggi.setHours(0, 0, 0, 0);
+      const prossimi = cards.filter(card => { const data = dataAttivita(card); return data && data >= oggi; });
+      const archivio = cards.filter(card => !prossimi.includes(card));
+      prossimi.sort((a, b) => dataAttivita(a) - dataAttivita(b));
+      const heading = (text) => {
+        const el = document.createElement('h2');
+        el.dataset.activityControl = '';
+        el.className = 'col-span-full font-serif text-3xl font-bold text-autumn-forest';
+        el.textContent = text;
+        return el;
+      };
+      grid.prepend(heading('Prossimi eventi'));
+      prossimi.forEach(card => grid.append(card));
+      if (!prossimi.length) {
+        const empty = document.createElement('p');
+        empty.dataset.activityControl = '';
+        empty.className = 'col-span-full text-autumn-muted';
+        empty.textContent = 'Al momento non ci sono eventi in programma.';
+        grid.append(empty);
+      }
+      grid.append(heading('Archivio attività'));
+      const filter = document.createElement('div');
+      filter.dataset.activityControl = '';
+      filter.className = 'col-span-full flex flex-wrap items-center gap-3';
+      const label = document.createElement('label');
+      label.htmlFor = 'activity-year';
+      label.className = 'font-bold text-autumn-forest';
+      label.textContent = 'Filtra per anno';
+      const select = document.createElement('select');
+      select.id = 'activity-year';
+      select.className = 'rounded-xl border border-amber-300 bg-white px-4 py-2 text-autumn-forest';
+      select.add(new Option('Tutti gli anni', ''));
+      const anni = [...new Set(archivio.map(card => dataAttivita(card)?.getFullYear()).filter(Boolean))].sort((a, b) => b - a);
+      anni.forEach(anno => select.add(new Option(String(anno), String(anno))));
+      const emptyArchive = document.createElement('p');
+      emptyArchive.dataset.activityControl = '';
+      emptyArchive.className = 'col-span-full text-autumn-muted';
+      emptyArchive.textContent = 'Nessuna attività in archivio per questo anno.';
+      function filtra() {
+        let visibili = 0;
+        archivio.forEach(card => {
+          const mostra = !select.value || String(dataAttivita(card)?.getFullYear()) === select.value;
+          card.style.display = mostra ? '' : 'none';
+          if (mostra) visibili++;
+        });
+        emptyArchive.hidden = visibili > 0;
+      }
+      select.addEventListener('change', filtra);
+      filter.append(label, select);
+      grid.append(filter, ...archivio, emptyArchive);
+      filtra();
+    }
+    window.organizzaAttivita = organizzaAttivita;
+    organizzaAttivita();
 
     // In home mostra tutte le attività con data odierna o futura.
     function caricaProssimiEventi() {
@@ -2693,8 +2784,19 @@
     }
 
     function toggleMobileMenu() {
-      document.getElementById('mobile-menu').classList.toggle('hidden');
+      const menu = document.getElementById('mobile-menu');
+      const button = document.getElementById('mobile-menu-btn');
+      const aperto = menu.classList.toggle('hidden') === false;
+      button.setAttribute('aria-expanded', String(aperto));
+      button.setAttribute('aria-label', aperto ? 'Chiudi menu' : 'Apri menu');
     }
+    document.addEventListener('keydown', event => {
+      const menu = document.getElementById('mobile-menu');
+      if (event.key === 'Escape' && !menu.classList.contains('hidden')) {
+        toggleMobileMenu();
+        document.getElementById('mobile-menu-btn').focus();
+      }
+    });
 
     /* Ingrandimento delle immagini nella pagina Le Attività */
     (function initActivityImageViewer() {
